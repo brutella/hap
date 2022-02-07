@@ -1,0 +1,26 @@
+version: '2'
+
+# expansions: 3
+
+vars:
+    PWD:
+        sh: pwd
+    BUILD_DIR: "{{ .PWD }}/build"
+
+tasks:
+    clean:
+        cmds:
+            - go clean
+            - rm -rf "{{ .BUILD_DIR }}"
+    test:
+        cmds:
+            - go test ./... -race -count=1
+    lint:
+        cmds:
+            - golangci-lint run
+    bridge:
+        cmds:
+            - "go build -o {{ .BUILD_DIR }}/bridge cmd/bridge/main.go"
+            - "{{ .BUILD_DIR }}/bridge"
+        sources:
+            - "**/*.go"
