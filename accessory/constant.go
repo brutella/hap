@@ -25,9 +25,9 @@ const (
 	TypeAirConditioner     byte = 21
 	TypeHumidifier         byte = 22
 	TypeDehumidifier       byte = 23
-	TypeSprinklers         byte = 28
-	TypeFaucets            byte = 29
-	TypeShowerSystems      byte = 30
+	TypeSprinkler          byte = 28
+	TypeFaucet             byte = 29
+	TypeShowerSystem       byte = 30
 	TypeTelevision         byte = 31
 	TypeRemoteControl      byte = 32
 )
