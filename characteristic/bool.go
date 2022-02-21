@@ -26,12 +26,15 @@ func (c *Bool) Value() bool {
 	return c.C.value(nil).(bool)
 }
 
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
+// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
 func (c *Bool) OnValueUpdate(fn func(old, new bool, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(bool), old.(bool), r)
 	})
 }
 
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
 func (c *Bool) OnValueRemoteUpdate(fn func(v bool)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {

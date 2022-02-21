@@ -9,7 +9,7 @@ type ColoredLightbulb struct {
 	Lightbulb *service.ColoredLightbulb
 }
 
-// NewLightbulb returns an light bulb accessory which one light bulb service.
+// NewLightbulb returns an light bulb accessory.
 func NewColoredLightbulb(info Info) *ColoredLightbulb {
 	a := New(info, TypeLightbulb)
 

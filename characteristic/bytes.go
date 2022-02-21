@@ -21,6 +21,7 @@ func (c *Bytes) SetValue(v []byte) {
 	c.setValue(base64FromBytes(v), nil)
 }
 
+// Value returns the value of c as byte array.
 func (c *Bytes) Value() []byte {
 	str := c.C.value(nil).(string)
 	if b, err := base64.StdEncoding.DecodeString(str); err != nil {

@@ -9,20 +9,20 @@ import (
 )
 
 const (
-	PermissionRead          = "pr" // can be read
-	PermissionWrite         = "pw" // can be written
-	PermissionEvents        = "ev" // sends events
-	PermissionHidden        = "hd" // is hidden
-	PermissionWriteResponse = "wr"
+	PermissionRead          = "pr" // The characteristic can only be read by paired controllers.
+	PermissionWrite         = "pw" // The characteristic can only be written by paired controllers.
+	PermissionEvents        = "ev" // The characteristic supports events.
+	PermissionHidden        = "hd" // The characteristic is hidden from the user
+	PermissionWriteResponse = "wr" // The characteristic supports write response
 )
 
 const (
-	UnitPercentage = "percentage"
-	UnitArcDegrees = "arcdegrees"
-	UnitCelsius    = "celsius"
-	UnitLux        = "lux"
-	UnitSeconds    = "seconds"
-	UnitPPM        = "ppm"
+	UnitPercentage = "percentage" // %
+	UnitArcDegrees = "arcdegrees" // °
+	UnitCelsius    = "celsius"    // °C
+	UnitLux        = "lux"        // lux
+	UnitSeconds    = "seconds"    // sec
+	UnitPPM        = "ppm"        // ppm
 )
 
 const (
@@ -38,23 +38,45 @@ const (
 	FormatTLV8   = "tlv8"
 )
 
+// ValueUpdateFunc is the value updated function for a characteristic.
 type ValueUpdateFunc func(c *C, new, old interface{}, req *http.Request)
 
 // C is a characteristic
 type C struct {
-	Id          uint64
-	Type        string
-	Permissions []string
-	Description string
-	Val         interface{}
-	Format      string
-	Unit        string
-	MaxLen      int
-	MaxVal      interface{}
-	MinVal      interface{}
-	StepVal     interface{}
+	// Id is the unique identifier
+	Id uint64
 
-	// Maps events flags to address
+	// Type is the characteristic type (ex. "8" for brightness)
+	Type string
+
+	// Permissions are the permissions
+	Permissions []string
+
+	// Description is a custom description
+	Description string
+
+	// Val is the stored value
+	Val interface{}
+
+	// Format is the value format (FormatString, FormatBool, ...)
+	Format string
+
+	// Unit is the value unit (UnitPercentage, UnitArcDegrees, ...)
+	Unit string
+
+	// MaxLen is the maximum length of Val (maximum characters if the format is "string")
+	MaxLen int
+
+	// MaxVal is the maximum value of Val (only for integers and floats)
+	MaxVal interface{}
+
+	// MinVal is the minimum value of Val (only for integers and floats)
+	MinVal interface{}
+
+	// StepVal is the step value of Val (only for integers and floats)
+	StepVal interface{}
+
+	// Stores which connected client has events enabled for this characteristic.
 	Events map[string]bool
 
 	// ValFunc returns the value of C.
@@ -66,9 +88,13 @@ type C struct {
 	// There are called when the value of the characteristic is updated.
 	valUpdateFuncs []ValueUpdateFunc
 
+	// Flag indicating if the value should be updated even
+	// when the new value is the same as the old value.
+	// This flag is only used for programmable switch events.
 	updateOnSameValue bool
 }
 
+// New returns a new characteristic.
 func New() *C {
 	return &C{
 		Events:         make(map[string]bool),
@@ -76,6 +102,8 @@ func New() *C {
 	}
 }
 
+// OnCValueUpdate register the provided function, which is called
+// when the value of the characteristic is updated.
 func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 	c.valUpdateFuncs = append(c.valUpdateFuncs, fn)
 }
@@ -128,6 +156,8 @@ func (c *C) setValue(v interface{}, req *http.Request) {
 	}
 }
 
+// ValueRequest returns the value of the characteristic for
+// a http request. If the characteristic is not
 func (c *C) ValueRequest(req *http.Request) interface{} {
 	// check write permission
 	if !c.IsReadable() {

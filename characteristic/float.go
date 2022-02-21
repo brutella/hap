@@ -31,7 +31,7 @@ func (c *Float) SetStepValue(v float64) {
 	c.StepVal = v
 }
 
-// Value returns the value as float
+// Value returns the value of c as float64.
 func (c *Float) Value() float64 {
 	return c.C.value(nil).(float64)
 }
@@ -48,13 +48,15 @@ func (c *Float) StepValue() float64 {
 	return c.StepVal.(float64)
 }
 
-// OnValueUpdate calls fn when the value was updated by a client.
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
+// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
 func (c *Float) OnValueUpdate(fn func(new, old float64, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(float64), old.(float64), r)
 	})
 }
 
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
 func (c *Float) OnValueRemoteUpdate(fn func(v float64)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {

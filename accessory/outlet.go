@@ -10,6 +10,7 @@ type Outlet struct {
 	Outlet *service.Outlet
 }
 
+// NewOutlet returns an outlet accessory.
 func NewOutlet(info Info) *Outlet {
 	a := New(info, TypeOutlet)
 

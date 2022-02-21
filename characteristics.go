@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type GetCharacteristicPayload struct {
+type CharacteristicData struct {
 	Aid   uint64      `json:"aid"`
 	Iid   uint64      `json:"iid"`
 	Value interface{} `json:"value,omitempty"`
@@ -27,23 +27,7 @@ type GetCharacteristicPayload struct {
 	MaxValue    interface{} `json:"maxValue,omitempty"`
 	MinStep     interface{} `json:"minStep,omitempty"`
 	MaxLen      *int        `json:"maxLen,omitempty"`
-}
 
-type PutCharacteristicsResponse struct {
-	Cs []CharacteristicData `json:"characteristics"`
-}
-
-type PutCharacteristicsRequest struct {
-	Cs []CharacteristicData `json:"characteristics"`
-}
-
-type CharacteristicData struct {
-	Aid   uint64      `json:"aid"`
-	Iid   uint64      `json:"iid"`
-	Value interface{} `json:"value,omitempty"`
-
-	Status   *int  `json:"status,omitempty"`
-	Events   *bool `json:"ev,omitempty"`
 	Remote   *bool `json:"remote,omitempty"`
 	Response *bool `json:"r,omitempty"`
 }
@@ -67,46 +51,44 @@ func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request
 	typ := req.FormValue("type") == "1"
 	ev := req.FormValue("ev") == "1"
 
-	pl := []*GetCharacteristicPayload{}
+	arr := []*CharacteristicData{}
 	err := false
 	for _, str := range strings.Split(v, ",") {
 		ids := strings.Split(str, ".")
 		if len(ids) != 2 {
 			continue
 		}
-		p := &GetCharacteristicPayload{
+		cdata := &CharacteristicData{
 			Aid: to.Uint64(ids[0]),
 			Iid: to.Uint64(ids[1]),
 		}
-		pl = append(pl, p)
+		arr = append(arr, cdata)
 
-		c := srv.findC(p.Aid, p.Iid)
+		c := srv.findC(cdata.Aid, cdata.Iid)
 		if c == nil {
 			err = true
 			status := JsonStatusServiceCommunicationFailure
-			p.Status = &status
+			cdata.Status = &status
 			continue
 		}
 
-		if c.IsReadable() {
-			p.Value = c.ValueRequest(req)
-		}
+		cdata.Value = c.ValueRequest(req)
 
 		if meta {
-			p.Format = &c.Format
-			p.Unit = &c.Unit
+			cdata.Format = &c.Format
+			cdata.Unit = &c.Unit
 			if c.MinVal != nil {
-				p.MinValue = c.MinVal
+				cdata.MinValue = c.MinVal
 			}
 			if c.MaxVal != nil {
-				p.MaxValue = c.MaxVal
+				cdata.MaxValue = c.MaxVal
 			}
 			if c.StepVal != nil {
-				p.MinStep = c.StepVal
+				cdata.MinStep = c.StepVal
 			}
 
 			if c.MaxLen > 0 {
-				p.MaxLen = &c.MaxLen
+				cdata.MaxLen = &c.MaxLen
 			}
 		}
 
@@ -116,21 +98,21 @@ func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request
 			if v, ok := c.Events[req.RemoteAddr]; ok {
 				ev = v
 			}
-			p.Events = &ev
+			cdata.Events = &ev
 		}
 
 		if perms {
-			p.Permissions = c.Permissions
+			cdata.Permissions = c.Permissions
 		}
 
 		if typ {
-			p.Type = &c.Type
+			cdata.Type = &c.Type
 		}
 	}
 
 	resp := struct {
-		Characteristics []*GetCharacteristicPayload `json:"characteristics"`
-	}{pl}
+		Characteristics []*CharacteristicData `json:"characteristics"`
+	}{arr}
 
 	log.Debug.Println(toJSON(resp))
 
@@ -148,7 +130,9 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 		return
 	}
 
-	data := PutCharacteristicsRequest{}
+	data := struct {
+		Cs []CharacteristicData `json:"characteristics"`
+	}{}
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		jsonError(res, JsonStatusInvalidValueInRequest)
@@ -157,18 +141,24 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 
 	log.Debug.Println(toJSON(data))
 
-	resp := PutCharacteristicsResponse{}
-
+	arr := []*CharacteristicData{}
 	for _, d := range data.Cs {
 		c := srv.findC(d.Aid, d.Iid)
-		p := CharacteristicData{
+		cdata := &CharacteristicData{
 			Aid: d.Aid,
 			Iid: d.Iid,
 		}
 
 		if c == nil {
 			status := JsonStatusServiceCommunicationFailure
-			p.Status = &status
+			cdata.Status = &status
+			arr = append(arr, cdata)
+			continue
+		}
+
+		if d.Response != nil {
+			cdata.Value = c.ValueRequest(req)
+			arr = append(arr, cdata)
 		}
 
 		if d.Value != nil {
@@ -178,21 +168,22 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 		if d.Events != nil {
 			if !c.IsObservable() {
 				status := JsonStatusNotificationNotSupported
-				p.Status = &status
+				cdata.Status = &status
+				arr = append(arr, cdata)
 			} else {
 				c.Events[req.RemoteAddr] = *d.Events
 			}
 		}
-
-		if d.Response != nil {
-			p.Value = c.ValueRequest(req)
-		}
 	}
 
-	if len(resp.Cs) == 0 {
+	if len(arr) == 0 {
 		res.WriteHeader(http.StatusNoContent)
 		return
 	}
+
+	resp := struct {
+		Characteristics []*CharacteristicData `json:"characteristics"`
+	}{arr}
 
 	log.Debug.Println(toJSON(resp))
 	jsonMultiStatus(res, resp)

@@ -59,6 +59,7 @@ func sendNotification(a *accessory.A, c *characteristic.C, req *http.Request) er
 		if req != nil && req.RemoteAddr == conn.RemoteAddr().String() {
 			// Don't send notification to the client
 			// who updated the value.
+			log.Debug.Printf("skip notification for %s\n", conn.RemoteAddr())
 			continue
 		}
 

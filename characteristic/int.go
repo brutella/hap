@@ -48,13 +48,15 @@ func (c *Int) StepValue() int {
 	return c.StepVal.(int)
 }
 
-// OnValueRemoteUpdate calls fn when the value was updated by a client.
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
+// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
 func (c *Int) OnValueUpdate(fn func(new, old int, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(int), old.(int), r)
 	})
 }
 
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
 func (c *Int) OnValueRemoteUpdate(fn func(v int)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {

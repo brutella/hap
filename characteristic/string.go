@@ -26,9 +26,19 @@ func (c *String) Value() string {
 	return c.C.value(nil).(string)
 }
 
-// OnValueRemoteUpdate calls fn when the value was updated by a client.
-func (c *String) OnValueUpdate(fn func(old, new string, r *http.Request)) {
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
+// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
+func (c *String) OnValueUpdate(fn func(new, old string, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(string), old.(string), r)
+	})
+}
+
+// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
+func (c *String) OnValueRemoteUpdate(fn func(v string)) {
+	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
+		if r != nil {
+			fn(new.(string))
+		}
 	})
 }
