@@ -48,9 +48,8 @@ type Server struct {
 	a  *accessory.A   // main accessory
 	as []*accessory.A // bridged accessories
 
-	configHash []byte // hash of accessory content (generated and stored on disk)
-	version    uint16 // version of accessory content – relates to configHash
-	uuid       string // internal identifier (generated and stored on disk)
+	version uint16 // version of accessory content – relates to configHash
+	uuid    string // internal identifier (generated and stored on disk)
 
 	port int // listen port (can be different than in Addr)
 	ln   *net.TCPListener
@@ -100,14 +99,6 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 		}
 
 		s.uuid = string(uuid)
-	}
-
-	// Load the stored config hash.
-	if len(s.configHash) == 0 {
-		b, err := s.st.Get("configHash")
-		if err == nil {
-			s.configHash = b
-		}
 	}
 
 	// Load the stored version or set to 1.
@@ -271,13 +262,19 @@ func (s *Server) add(as []*accessory.A) error {
 		}
 	}
 
-	configHash := configHash(as)
-	if !reflect.DeepEqual(s.configHash, string(configHash)) {
+	// The server keeps track of previously published accessories.
+	// If the accessory changed (added service or characteristics)
+	// from last time, we have to update the version flag.
+	var oldHash, newHash []byte
+
+	if b, err := s.st.Get("configHash"); err == nil && len(b) > 0 {
+		oldHash = b
+	}
+	newHash = configHash(as)
+	if !reflect.DeepEqual(oldHash, newHash) {
 		s.version += 1
 		s.st.Set("version", []byte(fmt.Sprintf("%d", s.version)))
-
-		s.configHash = configHash
-		s.st.Set("configHash", s.configHash)
+		s.st.Set("configHash", newHash)
 	}
 
 	return nil
