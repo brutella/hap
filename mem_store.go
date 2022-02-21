@@ -7,7 +7,7 @@ import (
 
 type memStore map[string][]byte
 
-func NewMemStore() memStore {
+func NewMemStore() Store {
 	return memStore{}
 }
 

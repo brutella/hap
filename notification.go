@@ -53,7 +53,7 @@ func sendNotification(a *accessory.A, c *characteristic.C, req *http.Request) er
 	b, err := ioutil.ReadAll(buffer)
 	b = []byte(strings.Replace(string(b), "HTTP/1.0", "EVENT/1.0", 1))
 
-	for _, conn := range Conns() {
+	for _, conn := range conns() {
 		if req != nil && req.RemoteAddr == conn.RemoteAddr().String() {
 			// Don't send notification to the client
 			// who updated the value.

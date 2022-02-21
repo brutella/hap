@@ -117,7 +117,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		// Close all connections if no
 		// admin controller is paired anymore
 		if !srv.pairedWithAdmin() {
-			for addr, conn := range Conns() {
+			for addr, conn := range conns() {
 				log.Debug.Println("Closing connection to", addr)
 				conn.Close()
 			}
@@ -125,7 +125,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		}
 
 		// Close connection of deleted controller
-		for addr, conn := range Conns() {
+		for addr, conn := range conns() {
 			ss, err := getSession(addr)
 			if err != nil {
 				log.Debug.Println("no session for", addr, err)

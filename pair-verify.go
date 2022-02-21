@@ -175,7 +175,7 @@ func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 	tlv8OK(res, resp)
 
 	// Store the negotiated keys in a session.
-	ss, err := NewSession(ses.SharedKey, pairing)
+	ss, err := newSession(ses.SharedKey, pairing)
 	if err != nil {
 		log.Info.Println(err)
 		return

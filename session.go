@@ -15,14 +15,14 @@ import (
 
 var mux = &sync.Mutex{}
 var sess = make(map[string]interface{})
-var conns = make(map[string]*conn)
+var cons = make(map[string]*conn)
 
 func connStateEvent(conn net.Conn, event http.ConnState) {
 	if event == http.StateClosed {
 		addr := conn.RemoteAddr().String()
 		mux.Lock()
 		delete(sess, addr)
-		delete(conns, addr)
+		delete(cons, addr)
 		mux.Unlock()
 	}
 }
@@ -89,24 +89,24 @@ func sessions() map[string]interface{} {
 func setConn(addr string, conn *conn) {
 	mux.Lock()
 	defer mux.Unlock()
-	conns[addr] = conn
+	cons[addr] = conn
 }
 
 func getConn(req *http.Request) *conn {
 	mux.Lock()
 	defer mux.Unlock()
 
-	if con, ok := conns[req.RemoteAddr]; !ok {
+	if con, ok := cons[req.RemoteAddr]; !ok {
 		return nil
 	} else {
 		return con
 	}
 }
 
-func Conns() map[string]*conn {
+func conns() map[string]*conn {
 	copy := map[string]*conn{}
 	mux.Lock()
-	for k, v := range conns {
+	for k, v := range cons {
 		copy[k] = v
 	}
 	mux.Unlock()
@@ -123,7 +123,7 @@ type session struct {
 	decryptCount uint64
 }
 
-func NewSession(shared [32]byte, p Pairing) (*session, error) {
+func newSession(shared [32]byte, p Pairing) (*session, error) {
 	salt := []byte("Control-Salt")
 	out := []byte("Control-Read-Encryption-Key")
 	in := []byte("Control-Write-Encryption-Key")
