@@ -184,7 +184,7 @@ func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 	// Store the session for the request.
 	setSession(req.RemoteAddr, ss)
 
-	conn := GetConn(req)
+	conn := getConn(req)
 	if conn == nil {
 		log.Info.Printf("no connection for %s\n", req.RemoteAddr)
 		return

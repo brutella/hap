@@ -185,6 +185,7 @@ func (st *storer) DeleteKeyPair(name string) error {
 	return st.Delete("keypair")
 }
 
+// Pairing is the pairing with a controller.
 type Pairing struct {
 	Name       string
 	PublicKey  []byte

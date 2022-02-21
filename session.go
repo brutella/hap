@@ -15,7 +15,7 @@ import (
 
 var mux = &sync.Mutex{}
 var sess = make(map[string]interface{})
-var conns = make(map[string]*Conn)
+var conns = make(map[string]*conn)
 
 func connStateEvent(conn net.Conn, event http.ConnState) {
 	if event == http.StateClosed {
@@ -27,12 +27,12 @@ func connStateEvent(conn net.Conn, event http.ConnState) {
 	}
 }
 
-func getSession(addr string) (*Session, error) {
+func getSession(addr string) (*session, error) {
 	mux.Lock()
 	defer mux.Unlock()
 
 	if v, ok := sess[addr]; ok {
-		if s, ok := v.(*Session); ok {
+		if s, ok := v.(*session); ok {
 			return s, nil
 		}
 		return nil, fmt.Errorf("unexpected session %T", v)
@@ -55,12 +55,12 @@ func getPairVerifySession(addr string) (*pairVerifySession, error) {
 	return nil, fmt.Errorf("no session for %s", addr)
 }
 
-func getPairSetupSession(addr string) (*PairSetupSession, error) {
+func getPairSetupSession(addr string) (*pairSetupSession, error) {
 	mux.Lock()
 	defer mux.Unlock()
 
 	if v, ok := sess[addr]; ok {
-		if s, ok := v.(*PairSetupSession); ok {
+		if s, ok := v.(*pairSetupSession); ok {
 			return s, nil
 		}
 		return nil, fmt.Errorf("unexpected session %T", v)
@@ -86,13 +86,13 @@ func sessions() map[string]interface{} {
 	return copy
 }
 
-func SetConn(addr string, conn *Conn) {
+func setConn(addr string, conn *conn) {
 	mux.Lock()
 	defer mux.Unlock()
 	conns[addr] = conn
 }
 
-func GetConn(req *http.Request) *Conn {
+func getConn(req *http.Request) *conn {
 	mux.Lock()
 	defer mux.Unlock()
 
@@ -103,8 +103,8 @@ func GetConn(req *http.Request) *Conn {
 	}
 }
 
-func Conns() map[string]*Conn {
-	copy := map[string]*Conn{}
+func Conns() map[string]*conn {
+	copy := map[string]*conn{}
 	mux.Lock()
 	for k, v := range conns {
 		copy[k] = v
@@ -114,7 +114,7 @@ func Conns() map[string]*Conn {
 	return copy
 }
 
-type Session struct {
+type session struct {
 	Pairing Pairing
 
 	encryptKey   [32]byte
@@ -123,12 +123,12 @@ type Session struct {
 	decryptCount uint64
 }
 
-func NewSession(shared [32]byte, p Pairing) (*Session, error) {
+func NewSession(shared [32]byte, p Pairing) (*session, error) {
 	salt := []byte("Control-Salt")
 	out := []byte("Control-Read-Encryption-Key")
 	in := []byte("Control-Write-Encryption-Key")
 
-	s := &Session{
+	s := &session{
 		Pairing: p,
 	}
 	var err error
@@ -146,7 +146,7 @@ func NewSession(shared [32]byte, p Pairing) (*Session, error) {
 
 // Encrypt return the encrypted data by splitting it into packets
 // [ length (2 bytes)] [ data ] [ auth (16 bytes)]
-func (s *Session) Encrypt(r io.Reader) (io.Reader, error) {
+func (s *session) Encrypt(r io.Reader) (io.Reader, error) {
 	packets := packetsFromBytes(r)
 	var buf bytes.Buffer
 	for _, p := range packets {
@@ -171,7 +171,7 @@ func (s *Session) Encrypt(r io.Reader) (io.Reader, error) {
 }
 
 // Decrypt returns the decrypted data
-func (s *Session) Decrypt(r io.Reader) (io.Reader, error) {
+func (s *session) Decrypt(r io.Reader) (io.Reader, error) {
 	var buf bytes.Buffer
 	for {
 		var length uint16

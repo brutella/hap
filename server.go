@@ -159,7 +159,7 @@ func (s *Server) listenAndServe(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	ln := &Listener{tcpLn.(*net.TCPListener)}
+	ln := &listener{tcpLn.(*net.TCPListener)}
 
 	// Get the port from the listener address because it
 	// it might be different than specified in Port.

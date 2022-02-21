@@ -8,7 +8,7 @@ import (
 	"errors"
 )
 
-type PairSetupSession struct {
+type pairSetupSession struct {
 	Identifier    []byte
 	Salt          []byte   // s
 	PublicKey     []byte   // A
@@ -18,8 +18,8 @@ type PairSetupSession struct {
 	session *srp.ServerSession
 }
 
-// NewPairSetupSession return a new setup server session.
-func NewPairSetupSession(id, pin string) (*PairSetupSession, error) {
+// newPairSetupSession return a new setup server session.
+func newPairSetupSession(id, pin string) (*pairSetupSession, error) {
 	var err error
 	pairName := []byte("Pair-Setup")
 	srp, err := srp.NewSRP(SRPGroup, sha512.New, keyDerivativeFuncRFC2945(sha512.New, []byte(pairName)))
@@ -29,7 +29,7 @@ func NewPairSetupSession(id, pin string) (*PairSetupSession, error) {
 		salt, v, err := srp.ComputeVerifier([]byte(pin))
 		if err == nil {
 			session := srp.NewServerSession([]byte(pairName), salt, v)
-			pairing := PairSetupSession{
+			pairing := pairSetupSession{
 				session:    session,
 				Salt:       salt,
 				PublicKey:  session.GetB(),
@@ -43,7 +43,7 @@ func NewPairSetupSession(id, pin string) (*PairSetupSession, error) {
 }
 
 // ProofFromClientProof validates client proof (`M1`) and returns authenticator or error if proof is not valid.
-func (p *PairSetupSession) ProofFromClientProof(clientProof []byte) ([]byte, error) {
+func (p *pairSetupSession) ProofFromClientProof(clientProof []byte) ([]byte, error) {
 	if !p.session.VerifyClientAuthenticator(clientProof) { // Validates M1 based on S and A
 		return nil, errors.New("client proof is invalid")
 	}
@@ -52,7 +52,7 @@ func (p *PairSetupSession) ProofFromClientProof(clientProof []byte) ([]byte, err
 }
 
 // SetupPrivateKeyFromClientPublicKey calculates and internally sets secret key `S` based on client public key `A`
-func (p *PairSetupSession) SetupPrivateKeyFromClientPublicKey(key []byte) error {
+func (p *pairSetupSession) SetupPrivateKeyFromClientPublicKey(key []byte) error {
 	key, err := p.session.ComputeKey(key) // S
 	if err == nil {
 		p.PrivateKey = key
@@ -64,7 +64,7 @@ func (p *PairSetupSession) SetupPrivateKeyFromClientPublicKey(key []byte) error 
 // SetupEncryptionKey calculates and internally sets encryption key `K` based on salt and info
 //
 // Only 32 bytes are used from HKDF-SHA512
-func (p *PairSetupSession) SetupEncryptionKey(salt []byte, info []byte) error {
+func (p *pairSetupSession) SetupEncryptionKey(salt []byte, info []byte) error {
 	hash, err := hkdf.Sha512(p.PrivateKey, salt, info)
 	if err == nil {
 		p.EncryptionKey = hash

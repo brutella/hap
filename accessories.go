@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-type AccessoriesPayload struct {
-	Accessories []*accessory.A `json:"accessories"`
-}
-
 func (srv *Server) getAccessories(res http.ResponseWriter, req *http.Request) {
 	if !srv.isPaired() {
 		log.Info.Println("not paired")
@@ -22,7 +18,10 @@ func (srv *Server) getAccessories(res http.ResponseWriter, req *http.Request) {
 	as = append(as, srv.a)
 	as = append(as, srv.as[:]...)
 
-	p := AccessoriesPayload{as}
+	p := struct {
+		Accessories []*accessory.A `json:"accessories"`
+	}{as}
+
 	log.Debug.Println(toJSON(p))
 	jsonOK(res, p)
 }

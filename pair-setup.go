@@ -109,7 +109,7 @@ type pairSetupStep6Payload struct {
 
 func (srv *Server) pairSetupStep1(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
 	// Create a new session.
-	ss, err := NewPairSetupSession(srv.uuid, srv.fmtPin())
+	ss, err := newPairSetupSession(srv.uuid, srv.fmtPin())
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
 		tlv8Error(res, data.State+1, TlvErrorUnknown)

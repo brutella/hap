@@ -10,7 +10,7 @@ import (
 	"net"
 )
 
-type Conn struct {
+type conn struct {
 	net.Conn
 
 	// s and ss are used to encrypt data. s is used to temporarily store the session.
@@ -19,35 +19,35 @@ type Conn struct {
 	// 2022-02-17 (mah) This workaround is needed because switching to encryption is done
 	// after sending a response. But Write() on http.ResponseWriter is not immediate.
 	// So therefore we wait until the next read.
-	s  *Session
-	ss *Session
+	s  *session
+	ss *session
 
 	readBuf io.Reader
 }
 
-func (conn *Conn) Upgrade(s *Session) {
-	conn.s = s
+func (c *conn) Upgrade(s *session) {
+	c.s = s
 }
 
 // Write writes bytes to the connection.
 // The written bytes are encrypted when possible.
-func (conn *Conn) Write(b []byte) (int, error) {
-	if conn.ss == nil {
-		return conn.Conn.Write(b)
+func (c *conn) Write(b []byte) (int, error) {
+	if c.ss == nil {
+		return c.Conn.Write(b)
 	}
 
 	var buf bytes.Buffer
 	buf.Write(b)
-	enc, err := conn.ss.Encrypt(&buf)
+	enc, err := c.ss.Encrypt(&buf)
 
 	if err != nil {
 		log.Debug.Println("encryption failed:", err)
-		err = conn.Conn.Close()
+		err = c.Conn.Close()
 		return 0, err
 	}
 
 	encB, err := ioutil.ReadAll(enc)
-	n, err := conn.Conn.Write(encB)
+	n, err := c.Conn.Write(encB)
 
 	return n, err
 }
@@ -58,19 +58,19 @@ const (
 
 // Read reads bytes from the connection.
 // The read bytes are decrypted when possible.
-func (conn *Conn) Read(b []byte) (int, error) {
-	if conn.s != nil {
-		conn.ss = conn.s
-		conn.s = nil
+func (c *conn) Read(b []byte) (int, error) {
+	if c.s != nil {
+		c.ss = c.s
+		c.s = nil
 	}
 
-	if conn.ss == nil {
-		return conn.Conn.Read(b)
+	if c.ss == nil {
+		return c.Conn.Read(b)
 	}
 
-	if conn.readBuf == nil {
-		r := bufio.NewReader(conn.Conn)
-		buf, err := conn.ss.Decrypt(r)
+	if c.readBuf == nil {
+		r := bufio.NewReader(c.Conn)
+		buf, err := c.ss.Decrypt(r)
 		if err != nil {
 			if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 				// Ignore timeout error #77
@@ -78,18 +78,18 @@ func (conn *Conn) Read(b []byte) (int, error) {
 				// Ignore close errors
 			} else {
 				log.Debug.Println("decryption failed:", err)
-				conn.Conn.Close()
+				c.Conn.Close()
 			}
 			return 0, err
 		}
 
-		conn.readBuf = buf
+		c.readBuf = buf
 	}
 
-	n, err := conn.readBuf.Read(b)
+	n, err := c.readBuf.Read(b)
 
 	if n < len(b) || err == io.EOF {
-		conn.readBuf = nil
+		c.readBuf = nil
 	}
 
 	return n, err

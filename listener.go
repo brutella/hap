@@ -4,26 +4,26 @@ import (
 	"net"
 )
 
-type Listener struct {
+type listener struct {
 	*net.TCPListener
 }
 
-func (ln *Listener) Accept() (con net.Conn, err error) {
+func (ln *listener) Accept() (con net.Conn, err error) {
 	con, err = ln.AcceptTCP()
 	if err != nil {
 		return
 	}
 
-	conn := &Conn{Conn: con}
-	SetConn(conn.RemoteAddr().String(), conn)
+	conn := &conn{Conn: con}
+	setConn(conn.RemoteAddr().String(), conn)
 
 	return conn, err
 }
 
-func (ln *Listener) Close() error {
+func (ln *listener) Close() error {
 	return ln.TCPListener.Close()
 }
 
-func (ln *Listener) Addr() net.Addr {
+func (ln *listener) Addr() net.Addr {
 	return ln.TCPListener.Addr()
 }

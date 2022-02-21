@@ -12,7 +12,7 @@ func jsonOK(res http.ResponseWriter, body interface{}) error {
 	}
 
 	res.WriteHeader(http.StatusOK)
-	wr := NewChunkedWriter(res, 2048)
+	wr := newChunkedWriter(res, 2048)
 	_, err = wr.Write(b)
 	return err
 }
@@ -24,7 +24,7 @@ func jsonMultiStatus(res http.ResponseWriter, body interface{}) error {
 	}
 
 	res.WriteHeader(http.StatusMultiStatus)
-	wr := NewChunkedWriter(res, 2048)
+	wr := newChunkedWriter(res, 2048)
 	_, err = wr.Write(b)
 	return err
 }
