@@ -81,7 +81,7 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 	s := &Server{
 		ss: &http.Server{
 			Handler:   r,
-			ConnState: ConnStateEvent,
+			ConnState: connStateEvent,
 		},
 		st: st,
 		a:  a,
@@ -120,19 +120,19 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 	// Group handlers for tlv8 and json encoded content.
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SetHeader("Content-Type", HTTPContentTypePairingTLV8))
-		r.Post("/pair-setup", s.PairSetup)
-		r.Post("/pair-verify", s.PairVerify)
-		r.Post("/identify", s.Identify)
+		r.Post("/pair-setup", s.pairSetup)
+		r.Post("/pair-verify", s.pairVerify)
+		r.Post("/identify", s.identify)
 	})
 
 	// The json encoded content is encrypted. The encryption keys
 	// are stored in a session. The de-/encryption is done by a Conn.
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.SetHeader("Content-Type", HTTPContentTypeHAPJson))
-		r.Get("/accessories", s.GetAccessories)
-		r.Get("/characteristics", s.GetCharacteristics)
-		r.Put("/characteristics", s.PutCharacteristics)
-		r.Post("/pairings", s.Pairings)
+		r.Get("/accessories", s.getAccessories)
+		r.Get("/characteristics", s.getCharacteristics)
+		r.Put("/characteristics", s.putCharacteristics)
+		r.Post("/pairings", s.pairings)
 	})
 
 	return s, nil

@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type CharacteristicData struct {
+type characteristicData struct {
 	Aid   uint64      `json:"aid"`
 	Iid   uint64      `json:"iid"`
 	Value interface{} `json:"value,omitempty"`
@@ -32,7 +32,7 @@ type CharacteristicData struct {
 	Response *bool `json:"r,omitempty"`
 }
 
-func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request) {
+func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request) {
 	if !srv.isPaired() {
 		log.Info.Println("not paired")
 		jsonError(res, JsonStatusInsufficientPrivileges)
@@ -51,14 +51,14 @@ func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request
 	typ := req.FormValue("type") == "1"
 	ev := req.FormValue("ev") == "1"
 
-	arr := []*CharacteristicData{}
+	arr := []*characteristicData{}
 	err := false
 	for _, str := range strings.Split(v, ",") {
 		ids := strings.Split(str, ".")
 		if len(ids) != 2 {
 			continue
 		}
-		cdata := &CharacteristicData{
+		cdata := &characteristicData{
 			Aid: to.Uint64(ids[0]),
 			Iid: to.Uint64(ids[1]),
 		}
@@ -111,7 +111,7 @@ func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	resp := struct {
-		Characteristics []*CharacteristicData `json:"characteristics"`
+		Characteristics []*characteristicData `json:"characteristics"`
 	}{arr}
 
 	log.Debug.Println(toJSON(resp))
@@ -123,7 +123,7 @@ func (srv *Server) GetCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 }
 
-func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request) {
+func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request) {
 	if !srv.isPaired() {
 		log.Info.Println("not paired")
 		jsonError(res, JsonStatusInsufficientPrivileges)
@@ -131,7 +131,7 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	data := struct {
-		Cs []CharacteristicData `json:"characteristics"`
+		Cs []characteristicData `json:"characteristics"`
 	}{}
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
@@ -141,10 +141,10 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 
 	log.Debug.Println(toJSON(data))
 
-	arr := []*CharacteristicData{}
+	arr := []*characteristicData{}
 	for _, d := range data.Cs {
 		c := srv.findC(d.Aid, d.Iid)
-		cdata := &CharacteristicData{
+		cdata := &characteristicData{
 			Aid: d.Aid,
 			Iid: d.Iid,
 		}
@@ -182,7 +182,7 @@ func (srv *Server) PutCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	resp := struct {
-		Characteristics []*CharacteristicData `json:"characteristics"`
+		Characteristics []*characteristicData `json:"characteristics"`
 	}{arr}
 
 	log.Debug.Println(toJSON(resp))

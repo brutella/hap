@@ -8,20 +8,20 @@ import (
 	"reflect"
 )
 
-type PairingPayload struct {
+type pairingPayload struct {
 	Identifier string `tlv8:"1"`
 	PublicKey  []byte `tlv8:"3"`
 	Permission byte   `tlv8:"11"`
 }
 
-func (srv *Server) Pairings(res http.ResponseWriter, req *http.Request) {
+func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 	if !srv.isPaired() {
 		log.Info.Println("not paired")
 		jsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
 
-	ss, err := GetSession(req.RemoteAddr)
+	ss, err := getSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
@@ -126,7 +126,7 @@ func (srv *Server) Pairings(res http.ResponseWriter, req *http.Request) {
 
 		// Close connection of deleted controller
 		for addr, conn := range Conns() {
-			ss, err := GetSession(addr)
+			ss, err := getSession(addr)
 			if err != nil {
 				log.Debug.Println("no session for", addr, err)
 				continue
@@ -140,9 +140,9 @@ func (srv *Server) Pairings(res http.ResponseWriter, req *http.Request) {
 	case MethodListPairings:
 		log.Debug.Println("list pairings")
 		ps := srv.st.Pairings()
-		resp := make([]PairingPayload, len(ps))
+		resp := make([]pairingPayload, len(ps))
 		for i, p := range ps {
-			resp[i] = PairingPayload{
+			resp[i] = pairingPayload{
 				Identifier: p.Name,
 				PublicKey:  p.PublicKey,
 				Permission: p.Permission,

@@ -22,7 +22,7 @@ type PairSetupSession struct {
 func NewPairSetupSession(id, pin string) (*PairSetupSession, error) {
 	var err error
 	pairName := []byte("Pair-Setup")
-	srp, err := srp.NewSRP(SRPGroup, sha512.New, KeyDerivativeFuncRFC2945(sha512.New, []byte(pairName)))
+	srp, err := srp.NewSRP(SRPGroup, sha512.New, keyDerivativeFuncRFC2945(sha512.New, []byte(pairName)))
 
 	if err == nil {
 		srp.SaltLength = 16
@@ -81,9 +81,9 @@ const (
 	SRPGroup = "rfc5054.3072" // N (modulo) => 384 byte
 )
 
-// KeyDerivativeFuncRFC2945 returns the SRP-6a key derivative function which does
+// keyDerivativeFuncRFC2945 returns the SRP-6a key derivative function which does
 //      x = H(s | H(I | ":" | P))
-func KeyDerivativeFuncRFC2945(h srp.HashFunc, id []byte) srp.KeyDerivationFunc {
+func keyDerivativeFuncRFC2945(h srp.HashFunc, id []byte) srp.KeyDerivationFunc {
 	return func(salt, pin []byte) []byte {
 		h := h()
 		h.Write(id)

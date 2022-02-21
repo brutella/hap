@@ -11,7 +11,7 @@ type AccessoriesPayload struct {
 	Accessories []*accessory.A `json:"accessories"`
 }
 
-func (srv *Server) GetAccessories(res http.ResponseWriter, req *http.Request) {
+func (srv *Server) getAccessories(res http.ResponseWriter, req *http.Request) {
 	if !srv.isPaired() {
 		log.Info.Println("not paired")
 		jsonError(res, JsonStatusInsufficientPrivileges)

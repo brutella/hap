@@ -14,24 +14,24 @@ import (
 )
 
 var mux = &sync.Mutex{}
-var sessions = make(map[string]interface{})
+var sess = make(map[string]interface{})
 var conns = make(map[string]*Conn)
 
-func ConnStateEvent(conn net.Conn, event http.ConnState) {
+func connStateEvent(conn net.Conn, event http.ConnState) {
 	if event == http.StateClosed {
 		addr := conn.RemoteAddr().String()
 		mux.Lock()
-		delete(sessions, addr)
+		delete(sess, addr)
 		delete(conns, addr)
 		mux.Unlock()
 	}
 }
 
-func GetSession(addr string) (*Session, error) {
+func getSession(addr string) (*Session, error) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	if v, ok := sessions[addr]; ok {
+	if v, ok := sess[addr]; ok {
 		if s, ok := v.(*Session); ok {
 			return s, nil
 		}
@@ -41,12 +41,12 @@ func GetSession(addr string) (*Session, error) {
 	return nil, fmt.Errorf("no session for %s", addr)
 }
 
-func GetPairVerifySession(addr string) (*PairVerifySession, error) {
+func getPairVerifySession(addr string) (*pairVerifySession, error) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	if v, ok := sessions[addr]; ok {
-		if s, ok := v.(*PairVerifySession); ok {
+	if v, ok := sess[addr]; ok {
+		if s, ok := v.(*pairVerifySession); ok {
 			return s, nil
 		}
 		return nil, fmt.Errorf("unexpected session %T", v)
@@ -55,11 +55,11 @@ func GetPairVerifySession(addr string) (*PairVerifySession, error) {
 	return nil, fmt.Errorf("no session for %s", addr)
 }
 
-func GetPairSetupSession(addr string) (*PairSetupSession, error) {
+func getPairSetupSession(addr string) (*PairSetupSession, error) {
 	mux.Lock()
 	defer mux.Unlock()
 
-	if v, ok := sessions[addr]; ok {
+	if v, ok := sess[addr]; ok {
 		if s, ok := v.(*PairSetupSession); ok {
 			return s, nil
 		}
@@ -69,17 +69,16 @@ func GetPairSetupSession(addr string) (*PairSetupSession, error) {
 	return nil, fmt.Errorf("no session for %s", addr)
 }
 
-func SetSession(addr string, sess interface{}) {
+func setSession(addr string, v interface{}) {
 	mux.Lock()
-	defer mux.Unlock()
-
-	sessions[addr] = sess
+	sess[addr] = v
+	mux.Unlock()
 }
 
-func Sessions() map[string]interface{} {
+func sessions() map[string]interface{} {
 	copy := map[string]interface{}{}
 	mux.Lock()
-	for k, v := range sessions {
+	for k, v := range sess {
 		copy[k] = v
 	}
 	mux.Unlock()

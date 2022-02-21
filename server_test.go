@@ -55,7 +55,7 @@ func TestIdentify(t *testing.T) {
 		identified = true
 	}
 
-	s.Identify(w, req)
+	s.identify(w, req)
 
 	r := w.Result()
 	if is, want := r.StatusCode, http.StatusOK; is != want {

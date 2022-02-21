@@ -11,7 +11,7 @@ import (
 	"net/http"
 )
 
-type PairVerifyPayload struct {
+type pairVerifyPayload struct {
 	Method        byte   `tlv8:"0"`
 	Identifier    string `tlv8:"1"`
 	PublicKey     []byte `tlv8:"3"`
@@ -20,7 +20,7 @@ type PairVerifyPayload struct {
 	Signature     []byte `tlv8:"10"`
 }
 
-type PairVerifySession struct {
+type pairVerifySession struct {
 	OtherPublicKey []byte
 	PublicKey      [32]byte
 	PrivateKey     [32]byte
@@ -28,8 +28,8 @@ type PairVerifySession struct {
 	EncryptionKey  [32]byte
 }
 
-func (srv *Server) PairVerify(res http.ResponseWriter, req *http.Request) {
-	data := PairVerifyPayload{}
+func (srv *Server) pairVerify(res http.ResponseWriter, req *http.Request) {
+	data := pairVerifyPayload{}
 	if err := tlv8.UnmarshalReader(req.Body, &data); err != nil {
 		log.Info.Println("tlv8:", err)
 		tlv8Error(res, data.State+1, TlvErrorUnknown)
@@ -40,9 +40,9 @@ func (srv *Server) PairVerify(res http.ResponseWriter, req *http.Request) {
 	case MethodPair:
 		switch data.State {
 		case Step1:
-			srv.PairVerifyStep1(res, req, data)
+			srv.pairVerifyStep1(res, req, data)
 		case Step3:
-			srv.PairVerifyStep3(res, req, data)
+			srv.pairVerifyStep3(res, req, data)
 		default:
 			log.Info.Println("invalid state", data.State)
 			res.WriteHeader(http.StatusBadRequest)
@@ -56,7 +56,7 @@ func (srv *Server) PairVerify(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func (srv *Server) PairVerifyStep1(res http.ResponseWriter, req *http.Request, data PairVerifyPayload) {
+func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
 	var otherPublicKey [32]byte
 	copy(otherPublicKey[:], data.PublicKey)
 
@@ -111,19 +111,19 @@ func (srv *Server) PairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 	tlv8OK(res, resp)
 
 	// Save the keys in a session and store the session for the request.
-	ses := &PairVerifySession{
+	ses := &pairVerifySession{
 		OtherPublicKey: data.PublicKey,
 		PublicKey:      publicKey,
 		PrivateKey:     privateKey,
 		SharedKey:      sharedKey,
 		EncryptionKey:  encKey,
 	}
-	SetSession(req.RemoteAddr, ses)
+	setSession(req.RemoteAddr, ses)
 }
 
-func (srv *Server) PairVerifyStep3(res http.ResponseWriter, req *http.Request, data PairVerifyPayload) {
+func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
 	// Get the session for the request.
-	ses, err := GetPairVerifySession(req.RemoteAddr)
+	ses, err := getPairVerifySession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
@@ -142,7 +142,7 @@ func (srv *Server) PairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 		return
 	}
 
-	encData := PairVerifyPayload{}
+	encData := pairVerifyPayload{}
 	if err := tlv8.Unmarshal(enc, &encData); err != nil {
 		log.Info.Println("tlv8:", err)
 		tlv8Error(res, Step4, TlvErrorUnknown)
@@ -182,7 +182,7 @@ func (srv *Server) PairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 	}
 
 	// Store the session for the request.
-	SetSession(req.RemoteAddr, ss)
+	setSession(req.RemoteAddr, ss)
 
 	conn := GetConn(req)
 	if conn == nil {

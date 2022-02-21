@@ -12,14 +12,12 @@ import (
 	"strings"
 )
 
-type NotificationPayload struct {
-	Cs []CharacteristicData `json:"characteristics"`
-}
-
 func sendNotification(a *accessory.A, c *characteristic.C, req *http.Request) error {
-	pl := NotificationPayload{
-		Cs: []CharacteristicData{
-			CharacteristicData{
+	pl := struct {
+		Cs []characteristicData `json:"characteristics"`
+	}{
+		Cs: []characteristicData{
+			characteristicData{
 				Aid:   a.Id,
 				Iid:   c.Id,
 				Value: c.Val,

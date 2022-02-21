@@ -4,7 +4,7 @@ import (
 	"net/http"
 )
 
-func (srv *Server) Identify(res http.ResponseWriter, req *http.Request) {
+func (srv *Server) identify(res http.ResponseWriter, req *http.Request) {
 	if srv.isPaired() {
 		res.WriteHeader(http.StatusBadRequest)
 		jsonError(res, JsonStatusInsufficientPrivileges)
