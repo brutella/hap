@@ -1,0 +1,10 @@
+sudo: false
+language: go
+go:
+  - 1.13.x
+  - master
+os:
+  - linux
+  - osx
+dist: trusty
+install: true

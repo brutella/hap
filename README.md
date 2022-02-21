@@ -1,4 +1,7 @@
 # hap
+
+[![GoDoc Widget]][GoDoc] [![Travis Widget]][Travis]
+
 `hap` (previously [hc](https://github.com/brutella/hc)) is a lightweight library to develop HomeKit accessories in Go.
 It abstracts the **H**omeKit **A**ccessory **P**rotocol (HAP) and makes it easy to work with [services](service/README.md) and [characteristics](characteristic/README.md).
 
