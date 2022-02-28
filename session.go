@@ -208,7 +208,7 @@ func (s *session) Decrypt(r io.Reader) (io.Reader, error) {
 		buf.Write(decrypted)
 
 		// Finish when all bytes fit in b
-		if length < PacketLengthMax {
+		if length < packetLengthMax {
 			break
 		}
 	}
@@ -217,8 +217,8 @@ func (s *session) Decrypt(r io.Reader) (io.Reader, error) {
 }
 
 const (
-	// PacketLengthMax is the max length of encrypted packets
-	PacketLengthMax = 0x400
+	// packetLengthMax is the max length of encrypted packets
+	packetLengthMax = 0x400
 )
 
 type packet struct {
@@ -251,7 +251,7 @@ func packetsWithSizeFromBytes(length int, r io.Reader) []packet {
 	return packets
 }
 
-// packetsFromBytes returns packets with length PacketLengthMax
+// packetsFromBytes returns packets with length packetLengthMax
 func packetsFromBytes(r io.Reader) []packet {
-	return packetsWithSizeFromBytes(PacketLengthMax, r)
+	return packetsWithSizeFromBytes(packetLengthMax, r)
 }
