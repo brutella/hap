@@ -23,7 +23,12 @@ func (c *Bool) SetValue(v bool) {
 
 // Value returns the value of c as bool.
 func (c *Bool) Value() bool {
-	return c.C.value(nil).(bool)
+	v, _ := c.C.valueRequest(nil)
+	if v == nil {
+		return false
+	}
+
+	return v.(bool)
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.

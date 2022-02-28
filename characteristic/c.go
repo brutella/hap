@@ -79,10 +79,20 @@ type C struct {
 	// Stores which connected client has events enabled for this characteristic.
 	Events map[string]bool
 
-	// ValFunc returns the value of C.
-	// If no nil, the return value of this function is used instead of Val.
-	// req is non nil, if the value is requested from a request.
-	ValFunc func(req *http.Request) interface{}
+	// ValueRequestFunc is called when the value of C is requested.
+	// The http request is non-nil, if the value of C is requested.
+	// by an HTTP request coming from a paired controller.
+	// The first return value of this function is the value of C.
+	// If the second argument is non-zero, the server responds with the
+	// HTTP status code 500 Internal Server Error.
+	ValueRequestFunc func(request *http.Request) (interface{}, int)
+
+	// SetValueRequestFunc is called when the value of C is updated.
+	// The first argument "value" is the new value of C.
+	// The second argument "request" is non-nil, if the value of C is
+	// updated from an HTTP request coming from a paired controller.
+	// An error is inidcated if the return value is non-zero.
+	SetValueRequestFunc func(value interface{}, request *http.Request) int
 
 	// A list of update value functions.
 	// There are called when the value of the characteristic is updated.
@@ -110,14 +120,23 @@ func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 
 // Sets the value of c to v.
 // The function is called if the value is updated from an http request.
-func (c *C) SetValueRequest(v interface{}, req *http.Request) {
+func (c *C) SetValueRequest(v interface{}, req *http.Request) int {
 	// check write permission
 	if !c.IsWritable() {
 		log.Info.Printf("writing %v by %s not allowed\n", v, req.RemoteAddr)
-		return
+		return -70404
+	}
+
+	if c.SetValueRequestFunc != nil {
+		if s := c.SetValueRequestFunc(v, req); s != 0 {
+			return s
+		}
 	}
 
 	c.setValue(v, req)
+
+	// no error
+	return 0
 }
 
 func (c *C) setValue(v interface{}, req *http.Request) {
@@ -148,25 +167,25 @@ func (c *C) setValue(v interface{}, req *http.Request) {
 	}
 }
 
-// ValueRequest returns the value of the characteristic for
-// a http request.
-func (c *C) ValueRequest(req *http.Request) interface{} {
+// ValueRequest returns the value of C and a status code.
+// if the characteristic is not readable, the status code -70405 is returned.
+func (c *C) ValueRequest(req *http.Request) (interface{}, int) {
 	// check write permission
 	if !c.IsReadable() {
 		log.Info.Printf("reading %d by %s not allowed\n", c.Id, req.RemoteAddr)
-		return nil
+		return nil, -70405
 	}
 
-	return c.value(req)
+	return c.valueRequest(req)
 }
 
-// value returns the value of the characteristic.
-func (c *C) value(req *http.Request) interface{} {
-	if c.ValFunc != nil {
-		return c.ValFunc(req)
+// value returns the value of C and a status code.
+func (c *C) valueRequest(req *http.Request) (interface{}, int) {
+	if c.ValueRequestFunc != nil {
+		return c.ValueRequestFunc(req)
 	}
 
-	return c.Val
+	return c.Val, 0
 }
 
 func (c *C) IsWritable() bool {
@@ -203,7 +222,7 @@ func (c *C) IsWriteOnly() bool {
 	return len(c.Permissions) == 1 && c.Permissions[0] == PermissionWrite
 }
 
-func (ch *C) MarshalJSON() ([]byte, error) {
+func (c *C) MarshalJSON() ([]byte, error) {
 	d := struct {
 		Id          uint64   `json:"iid"` // managed by accessory
 		Type        string   `json:"type"`
@@ -219,20 +238,22 @@ func (ch *C) MarshalJSON() ([]byte, error) {
 		MinValue  interface{} `json:"minValue,omitempty"`
 		StepValue interface{} `json:"minStep,omitempty"`
 	}{
-		Id:          ch.Id,
-		Type:        ch.Type,
-		Permissions: ch.Permissions,
-		Description: ch.Description,
-		Format:      ch.Format,
-		Unit:        ch.Unit,
-		MaxLen:      ch.MaxLen,
-		MaxValue:    ch.MaxVal,
-		MinValue:    ch.MinVal,
-		StepValue:   ch.StepVal,
+		Id:          c.Id,
+		Type:        c.Type,
+		Permissions: c.Permissions,
+		Description: c.Description,
+		Format:      c.Format,
+		Unit:        c.Unit,
+		MaxLen:      c.MaxLen,
+		MaxValue:    c.MaxVal,
+		MinValue:    c.MinVal,
+		StepValue:   c.StepVal,
 	}
 
-	if ch.IsReadable() {
-		d.Value = ch.value(nil)
+	if c.IsReadable() {
+		if v, _ := c.valueRequest(nil); v != nil {
+			d.Value = v
+		}
 	}
 
 	return json.Marshal(&d)

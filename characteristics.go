@@ -72,7 +72,13 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 			continue
 		}
 
-		cdata.Value = c.ValueRequest(req)
+		v, s := c.ValueRequest(req)
+		if s != 0 {
+			err = true
+			cdata.Status = &s
+		} else {
+			cdata.Value = v
+		}
 
 		if meta {
 			cdata.Format = &c.Format
@@ -156,13 +162,19 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 			continue
 		}
 
-		if d.Response != nil {
-			cdata.Value = c.ValueRequest(req)
-			arr = append(arr, cdata)
+		if d.Value != nil {
+			s := c.SetValueRequest(d.Value, req)
+			if s != 0 {
+				cdata.Status = &s
+			}
 		}
 
-		if d.Value != nil {
-			c.SetValueRequest(d.Value, req)
+		if d.Response != nil {
+			if v, s := c.ValueRequest(req); s != 0 {
+				cdata.Status = &s
+			} else {
+				cdata.Value = v
+			}
 		}
 
 		if d.Events != nil {
@@ -173,6 +185,10 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 			} else {
 				c.Events[req.RemoteAddr] = *d.Events
 			}
+		}
+
+		if cdata.Status != nil || cdata.Value != nil {
+			arr = append(arr, cdata)
 		}
 	}
 

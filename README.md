@@ -36,9 +36,10 @@ If you want to support `hap`, please purchase Home from the [App Store][home-app
 This library is a rewrite of [hc](https://github.com/brutella/hc).
 If you want to migrate from `hc`, consider the following changes.
 
-- Instead of `hc.NewIPTransport(...)` you now call `hap.NewServer(...)` to create a server. 
-- You can provide your own persistent store by implementing the [Store](store.go) interface.
-- You can define your own http handlers. [hc#212](https://github.com/brutella/hc/issues/212)
+- Instead of `hc.NewIPTransport(...)` you now call [hap.NewServer(...)](https://pkg.go.dev/github.com/brutella/hap#NewServer) to create a server.
+- You can create your own persistent storage by implementing the [Store](store.go) interface.
+- Setting the value of a characteristic can now fail. Fixes [hc#163](https://github.com/brutella/hc/issues/163)
+- You can define custom http handlers. Fixes [hc#212](https://github.com/brutella/hc/issues/212)
 ```go
 server.ServeMux().HandleFunc("/ping", func(res http.ResponseWriter, req *http.Request) {
     res.Write([]byte("pong"))

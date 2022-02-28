@@ -33,7 +33,12 @@ func (c *Int) SetStepValue(v int) {
 
 // Value returns the value of c as integer.
 func (c *Int) Value() int {
-	return c.C.value(nil).(int)
+	v, _ := c.C.valueRequest(nil)
+	if v == nil {
+		return 0
+	}
+
+	return v.(int)
 }
 
 func (c *Int) MinValue() int {

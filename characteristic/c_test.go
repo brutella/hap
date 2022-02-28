@@ -11,9 +11,9 @@ func TestCharacteristicValue(t *testing.T) {
 	c.Val = 0
 
 	n := 0
-	c.ValFunc = func(*http.Request) interface{} {
+	c.ValueRequestFunc = func(*http.Request) (interface{}, int) {
 		n++
-		return n
+		return n, 0
 	}
 
 	if is, want := c.Value(), 1; is != want {
@@ -136,6 +136,28 @@ func TestReadOnly(t *testing.T) {
 	c.SetValueRequest("Gottfried", &http.Request{})
 
 	if is, want := c.Value(), "Matthias"; is != want {
+		t.Fatalf("is=%v want=%v", is, want)
+	}
+}
+
+func TestSetValueRequestFunc(t *testing.T) {
+	c := NewBrightness()
+
+	c.SetValue(100)
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+		if r != nil {
+			return -70408
+		}
+
+		return 0
+	}
+
+	s := c.SetValueRequest(50, &http.Request{})
+	if is, want := s, -70408; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+
+	if is, want := c.Value(), 100; is != want {
 		t.Fatalf("is=%v want=%v", is, want)
 	}
 }

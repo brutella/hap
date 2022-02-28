@@ -41,6 +41,7 @@ func jsonError(res http.ResponseWriter, status int) error {
 		return err
 	}
 
+	res.WriteHeader(http.StatusBadRequest)
 	_, err = res.Write(b)
 	return err
 }

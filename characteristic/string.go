@@ -23,7 +23,12 @@ func (c *String) SetValue(v string) {
 
 // Value returns the value of c as string.
 func (c *String) Value() string {
-	return c.C.value(nil).(string)
+	v, _ := c.C.valueRequest(nil)
+	if v == nil {
+		return ""
+	}
+
+	return v.(string)
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.

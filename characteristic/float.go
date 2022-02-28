@@ -33,7 +33,12 @@ func (c *Float) SetStepValue(v float64) {
 
 // Value returns the value of c as float64.
 func (c *Float) Value() float64 {
-	return c.C.value(nil).(float64)
+	v, _ := c.C.valueRequest(nil)
+	if v == nil {
+		return 0
+	}
+
+	return v.(float64)
 }
 
 func (c *Float) MinValue() float64 {
