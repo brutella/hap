@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	// HTTPContentTypePairingTLV8 is the HTTP content type for pairing
+	// HTTPContentTypePairingTLV8 is the HTTP content type for tlv8 data
 	HTTPContentTypePairingTLV8 = "application/pairing+tlv8"
 
 	// HTTPContentTypeHAPJson is the HTTP content type for json data

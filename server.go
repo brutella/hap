@@ -67,7 +67,7 @@ type ServeMux interface {
 	HandleFunc(pattern string, handler http.HandlerFunc)
 }
 
-// NewServer returns a new server give a store (to persist data) and accessories.
+// NewServer returns a new server given a store (to persist data) and accessories.
 // If more than one accessory is added to the server, *a* acts as a bridge.
 func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error) {
 	r := chi.NewRouter()
