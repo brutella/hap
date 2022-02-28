@@ -37,7 +37,8 @@ This library is a rewrite of [hc](https://github.com/brutella/hc).
 If you want to migrate from `hc`, consider the following changes.
 
 - Instead of `hc.NewIPTransport(...)` you now call `hap.NewServer(...)` to create a server. 
-- With the server you can define your own http handlers. [hc#212](https://github.com/brutella/hc/issues/212)
+- You can provide your own persistent store by implementing the [Store](store.go) interface.
+- You can define your own http handlers. [hc#212](https://github.com/brutella/hc/issues/212)
 ```go
 server.ServeMux().HandleFunc("/ping", func(res http.ResponseWriter, req *http.Request) {
     res.Write([]byte("pong"))
@@ -56,7 +57,7 @@ server.Key = hap.KeyPair{
 
 - Supports Go modules (requires Go 1.13)
 - Full implementation of the HAP in Go
-- Supports all HomeKit [services and characteristics](service/README.md)
+- Supports all HomeKit [services](service) and [characteristics](characteristic)
 - Built-in service announcement via DNS-SD using [dnssd](http://github.com/brutella/dnssd)
 - Runs on linux and macOS
 - Documentation: http://godoc.org/github.com/brutella/hap
