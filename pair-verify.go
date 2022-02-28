@@ -39,10 +39,10 @@ func (srv *Server) pairVerify(res http.ResponseWriter, req *http.Request) {
 	switch data.Method {
 	case MethodPair:
 		switch data.State {
-		case Step1:
-			srv.pairVerifyStep1(res, req, data)
-		case Step3:
-			srv.pairVerifyStep3(res, req, data)
+		case M1:
+			srv.pairVerifyM1(res, req, data)
+		case M3:
+			srv.pairVerifyM3(res, req, data)
 		default:
 			log.Info.Println("invalid state", data.State)
 			res.WriteHeader(http.StatusBadRequest)
@@ -56,7 +56,7 @@ func (srv *Server) pairVerify(res http.ResponseWriter, req *http.Request) {
 
 }
 
-func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
+func (srv *Server) pairVerifyM1(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
 	var otherPublicKey [32]byte
 	copy(otherPublicKey[:], data.PublicKey)
 
@@ -67,7 +67,7 @@ func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
@@ -78,7 +78,7 @@ func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 	signature, err := ed25519.Signature(srv.Key.Private[:], buf)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
@@ -94,7 +94,7 @@ func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 	if err != nil {
 		log.Info.Println("tlv8:", err)
 		res.WriteHeader(http.StatusBadRequest)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 		PublicKey     []byte `tlv8:"3"`
 		EncryptedData []byte `tlv8:"5"`
 	}{
-		State:         Step2,
+		State:         M2,
 		PublicKey:     publicKey[:],
 		EncryptedData: append(encBuf, mac[:]...),
 	}
@@ -121,13 +121,13 @@ func (srv *Server) pairVerifyStep1(res http.ResponseWriter, req *http.Request, d
 	setSession(req.RemoteAddr, ses)
 }
 
-func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
+func (srv *Server) pairVerifyM3(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
 	// Get the session for the request.
 	ses, err := getPairVerifySession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step4, TlvErrorUnknown)
+		tlv8Error(res, M4, TlvErrorUnknown)
 		return
 	}
 
@@ -138,21 +138,21 @@ func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 	enc, err := chacha20poly1305.DecryptAndVerify(ses.EncryptionKey[:], []byte("PV-Msg03"), msg, mac, nil)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step4, TlvErrorAuthentication)
+		tlv8Error(res, M4, TlvErrorAuthentication)
 		return
 	}
 
 	encData := pairVerifyPayload{}
 	if err := tlv8.Unmarshal(enc, &encData); err != nil {
 		log.Info.Println("tlv8:", err)
-		tlv8Error(res, Step4, TlvErrorUnknown)
+		tlv8Error(res, M4, TlvErrorUnknown)
 		return
 	}
 
 	pairing, err := srv.st.Pairing(encData.Identifier)
 	if err != nil {
 		log.Info.Printf("not paired with %s yet\n", encData.Identifier)
-		tlv8Error(res, Step4, TlvErrorAuthentication)
+		tlv8Error(res, M4, TlvErrorAuthentication)
 		return
 	}
 
@@ -163,14 +163,14 @@ func (srv *Server) pairVerifyStep3(res http.ResponseWriter, req *http.Request, d
 
 	if !ed25519.ValidateSignature(pairing.PublicKey[:], buf, encData.Signature) {
 		log.Info.Println("signature is invalid")
-		tlv8Error(res, Step4, TlvErrorUnknownPeer)
+		tlv8Error(res, M4, TlvErrorUnknownPeer)
 		return
 	}
 
 	resp := struct {
 		State byte `tlv8:"6"`
 	}{
-		State: Step4,
+		State: M4,
 	}
 	tlv8OK(res, resp)
 

@@ -25,7 +25,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
@@ -40,7 +40,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 	if err := tlv8.UnmarshalReader(req.Body, &d); err != nil {
 		log.Info.Println("tlv8:", err)
 		res.WriteHeader(http.StatusBadRequest)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
@@ -50,7 +50,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 
 		if ss.Pairing.Permission != PermissionAdmin {
 			log.Info.Println("operation not allowed for non-admin controllers")
-			tlv8Error(res, Step2, TlvErrorAuthentication)
+			tlv8Error(res, M2, TlvErrorAuthentication)
 			return
 		}
 
@@ -64,7 +64,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		} else {
 			if !reflect.DeepEqual(p.PublicKey, d.PublicKey) {
 				log.Info.Println("invalid public key")
-				tlv8Error(res, Step2, TlvErrorUnknown)
+				tlv8Error(res, M2, TlvErrorUnknown)
 				return
 			}
 			// Update permission
@@ -74,14 +74,14 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		err = srv.savePairing(p)
 		if err != nil {
 			log.Info.Println(err)
-			tlv8Error(res, Step2, TlvErrorUnknown)
+			tlv8Error(res, M2, TlvErrorUnknown)
 			return
 		}
 
 		resp := struct {
 			State byte `tlv8:"6"`
 		}{
-			State: Step2,
+			State: M2,
 		}
 		tlv8OK(res, resp)
 
@@ -90,20 +90,20 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 
 		if ss.Pairing.Permission != PermissionAdmin {
 			log.Info.Println("operation not allowed for non-admin controllers")
-			tlv8Error(res, Step2, TlvErrorAuthentication)
+			tlv8Error(res, M2, TlvErrorAuthentication)
 			return
 		}
 
 		p, err := srv.st.Pairing(d.Identifier)
 		if err != nil {
 			log.Info.Println(err)
-			tlv8Error(res, Step2, TlvErrorUnknown)
+			tlv8Error(res, M2, TlvErrorUnknown)
 			return
 		}
 
 		if err = srv.deletePairing(p); err != nil {
 			log.Info.Println(err)
-			tlv8Error(res, Step2, TlvErrorUnknown)
+			tlv8Error(res, M2, TlvErrorUnknown)
 			return
 		}
 

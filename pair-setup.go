@@ -11,12 +11,12 @@ import (
 )
 
 const (
-	Step1 byte = 0x1
-	Step2 byte = 0x2
-	Step3 byte = 0x3
-	Step4 byte = 0x4
-	Step5 byte = 0x5
-	Step6 byte = 0x6
+	M1 byte = 0x1
+	M2 byte = 0x2
+	M3 byte = 0x3
+	M4 byte = 0x4
+	M5 byte = 0x5
+	M6 byte = 0x6
 )
 
 type pairSetupPayload struct {
@@ -40,7 +40,7 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	// pairing is only allowed if the accessory is not paired yet
 	if srv.isPaired() {
 		log.Info.Println("pairing is not allowed")
-		tlv8Error(res, Step2, TlvErrorUnavailable)
+		tlv8Error(res, M2, TlvErrorUnavailable)
 		return
 	}
 
@@ -48,7 +48,7 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	for addr, _ := range sessions() {
 		if addr != req.RemoteAddr {
 			log.Info.Printf("simulatenous pairings are not allowed")
-			tlv8Error(res, Step2, TlvErrorBusy)
+			tlv8Error(res, M2, TlvErrorBusy)
 			return
 		}
 	}
@@ -57,19 +57,19 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	if err := tlv8.UnmarshalReader(req.Body, &data); err != nil {
 		log.Info.Println("tlv8:", err)
 		res.WriteHeader(http.StatusBadRequest)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
 	switch data.Method {
 	case MethodPair:
 		switch data.State {
-		case Step1:
-			srv.pairSetupStep1(res, req, data)
-		case Step3:
-			srv.pairSetupStep3(res, req, data)
-		case Step5:
-			srv.pairSetupStep5(res, req, data)
+		case M1:
+			srv.pairSetupM1(res, req, data)
+		case M3:
+			srv.pairSetupM3(res, req, data)
+		case M5:
+			srv.pairSetupM5(res, req, data)
 		default:
 			log.Info.Println("invalid state", data.State)
 			res.WriteHeader(http.StatusBadRequest)
@@ -77,7 +77,7 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 		}
 	case MethodPairMFi:
 		res.WriteHeader(http.StatusBadRequest)
-		tlv8Error(res, Step2, TlvErrorInvalidRequest)
+		tlv8Error(res, M2, TlvErrorInvalidRequest)
 	default:
 		log.Info.Println("pair setup: invalid method", data.Method)
 		res.WriteHeader(http.StatusBadRequest)
@@ -85,88 +85,88 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	}
 }
 
-type pairSetupStep2Payload struct {
+type pairSetupM2Payload struct {
 	Salt      []byte `tlv8:"2"`
 	PublicKey []byte `tlv8:"3"`
 	State     byte   `tlv8:"6"`
 }
 
-type pairSetupStep4Payload struct {
+type pairSetupM4Payload struct {
 	Proof []byte `tlv8:"4"`
 	State byte   `tlv8:"6"`
 }
 
-type pairSetupStep6EncryptedPayload struct {
+type pairSetupM6EncryptedPayload struct {
 	Identifier []byte `tlv8:"1"`
 	PublicKey  []byte `tlv8:"3"`
 	Signature  []byte `tlv8:"10"`
 }
 
-type pairSetupStep6Payload struct {
+type pairSetupM6Payload struct {
 	EncryptedData []byte `tlv8:"5"`
 	State         byte   `tlv8:"6"`
 }
 
-func (srv *Server) pairSetupStep1(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
+func (srv *Server) pairSetupM1(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
 	// Create a new session.
 	ss, err := newPairSetupSession(srv.uuid, srv.fmtPin())
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 	setSession(req.RemoteAddr, ss)
 
-	resp := pairSetupStep2Payload{
+	resp := pairSetupM2Payload{
 		Salt:      ss.Salt,
 		PublicKey: ss.PublicKey,
-		State:     Step2,
+		State:     M2,
 	}
 	tlv8OK(res, resp)
 }
 
-func (srv *Server) pairSetupStep3(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
+func (srv *Server) pairSetupM3(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
 	ses, err := getPairSetupSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step2, TlvErrorUnknown)
+		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
 
 	err = ses.SetupPrivateKeyFromClientPublicKey(data.PublicKey)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step4, TlvErrorInvalidRequest)
+		tlv8Error(res, M4, TlvErrorInvalidRequest)
 		return
 	}
 	proof, err := ses.ProofFromClientProof(data.Proof)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step4, TlvErrorInvalidRequest)
+		tlv8Error(res, M4, TlvErrorInvalidRequest)
 		return
 	}
 
 	err = ses.SetupEncryptionKey([]byte("Pair-Setup-Encrypt-Salt"), []byte("Pair-Setup-Encrypt-Info"))
 	if err != nil {
 		log.Info.Println("pair-setup:", err)
-		tlv8Error(res, Step4, TlvErrorInvalidRequest)
+		tlv8Error(res, M4, TlvErrorInvalidRequest)
 		return
 	}
 
-	resp := pairSetupStep4Payload{
+	resp := pairSetupM4Payload{
 		Proof: proof,
-		State: Step4,
+		State: M4,
 	}
 	tlv8OK(res, resp)
 }
 
-func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
+func (srv *Server) pairSetupM5(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
 	ses, err := getPairSetupSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step6, TlvErrorUnknown)
+		tlv8Error(res, M6, TlvErrorUnknown)
 		return
 	}
 
@@ -178,7 +178,7 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, Step6, TlvErrorUnknown)
+		tlv8Error(res, M6, TlvErrorUnknown)
 		return
 	}
 
@@ -190,7 +190,7 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 	if err := tlv8.Unmarshal(decrypted, &encData); err != nil {
 		log.Info.Println("tlv8:", err)
 		res.WriteHeader(http.StatusBadRequest)
-		tlv8Error(res, Step6, TlvErrorUnknown)
+		tlv8Error(res, M6, TlvErrorUnknown)
 		return
 	}
 
@@ -204,7 +204,7 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 
 	if !ed25519.ValidateSignature(encData.PublicKey[:], buf, encData.Signature) {
 		log.Info.Println("ed25519 signature invalid")
-		tlv8Error(res, Step6, TlvErrorInvalidRequest)
+		tlv8Error(res, M6, TlvErrorInvalidRequest)
 		return
 	}
 
@@ -213,7 +213,7 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 	hash, err = hkdf.Sha512(ses.PrivateKey, []byte("Pair-Setup-Accessory-Sign-Salt"), []byte("Pair-Setup-Accessory-Sign-Info"))
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step6, TlvErrorInvalidRequest)
+		tlv8Error(res, M6, TlvErrorInvalidRequest)
 		return
 	}
 
@@ -225,11 +225,11 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 	signature, err := ed25519.Signature(srv.Key.Private[:], buf)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step6, TlvErrorInvalidRequest)
+		tlv8Error(res, M6, TlvErrorInvalidRequest)
 		return
 	}
 
-	privateData := pairSetupStep6EncryptedPayload{
+	privateData := pairSetupM6EncryptedPayload{
 		Identifier: ses.Identifier,
 		PublicKey:  srv.Key.Public[:],
 		Signature:  signature,
@@ -237,14 +237,14 @@ func (srv *Server) pairSetupStep5(res http.ResponseWriter, req *http.Request, da
 	b, err := tlv8.Marshal(privateData)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, Step6, TlvErrorInvalidRequest)
+		tlv8Error(res, M6, TlvErrorInvalidRequest)
 		return
 	}
 
 	encrypted, mac, _ := chacha20poly1305.EncryptAndSeal(ses.EncryptionKey[:], []byte("PS-Msg06"), b, nil)
 
-	resp := pairSetupStep6Payload{
-		State:         Step6,
+	resp := pairSetupM6Payload{
+		State:         M6,
 		EncryptedData: append(encrypted, mac[:]...),
 	}
 	tlv8OK(res, resp)
