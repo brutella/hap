@@ -108,15 +108,6 @@ func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 	c.valUpdateFuncs = append(c.valUpdateFuncs, fn)
 }
 
-// value returns the value of the characteristic.
-func (c *C) value(r *http.Request) interface{} {
-	if c.ValFunc != nil {
-		return c.ValFunc(r)
-	}
-
-	return c.Val
-}
-
 // Sets the value of c to v.
 // The function is called if the value is updated from an http request.
 func (c *C) SetValueRequest(v interface{}, req *http.Request) {
@@ -125,6 +116,7 @@ func (c *C) SetValueRequest(v interface{}, req *http.Request) {
 		log.Info.Printf("writing %v by %s not allowed\n", v, req.RemoteAddr)
 		return
 	}
+
 	c.setValue(v, req)
 }
 
@@ -157,7 +149,7 @@ func (c *C) setValue(v interface{}, req *http.Request) {
 }
 
 // ValueRequest returns the value of the characteristic for
-// a http request. If the characteristic is not
+// a http request.
 func (c *C) ValueRequest(req *http.Request) interface{} {
 	// check write permission
 	if !c.IsReadable() {
@@ -165,6 +157,11 @@ func (c *C) ValueRequest(req *http.Request) interface{} {
 		return nil
 	}
 
+	return c.value(req)
+}
+
+// value returns the value of the characteristic.
+func (c *C) value(req *http.Request) interface{} {
 	if c.ValFunc != nil {
 		return c.ValFunc(req)
 	}
