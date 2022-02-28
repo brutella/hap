@@ -1,6 +1,8 @@
 package characteristic
 
 import (
+	"github.com/brutella/hap/log"
+
 	"encoding/base64"
 	"net/http"
 )
@@ -33,6 +35,24 @@ func (c *Bytes) Value() []byte {
 		return []byte{}
 	} else {
 		return b
+	}
+}
+
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
+// if the value is going to be updated from a request.
+func (c *Bytes) OnSetRemoteValue(fn func(v []byte) error) {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+		if r == nil {
+			return 0
+		}
+
+		str, _ := base64.StdEncoding.DecodeString(v.(string))
+
+		if err := fn(str); err != nil {
+			log.Debug.Println(err)
+			return -70402
+		}
+		return 0
 	}
 }
 

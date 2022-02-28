@@ -1,6 +1,8 @@
 package characteristic
 
 import (
+	"github.com/brutella/hap/log"
+
 	"net/http"
 )
 
@@ -9,11 +11,11 @@ type Bool struct {
 }
 
 func NewBool(typ string) *Bool {
-	number := New()
-	number.Type = typ
-	number.Format = FormatBool
+	c := New()
+	c.Type = typ
+	c.Format = FormatBool
 
-	return &Bool{number}
+	return &Bool{c}
 }
 
 // SetValue sets the value of c to v.
@@ -29,6 +31,22 @@ func (c *Bool) Value() bool {
 	}
 
 	return v.(bool)
+}
+
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
+// if the value is going to be updated from a request.
+func (c *Bool) OnSetRemoteValue(fn func(v bool) error) {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+		if r == nil {
+			return 0
+		}
+
+		if err := fn(v.(bool)); err != nil {
+			log.Debug.Println(err)
+			return -70402
+		}
+		return 0
+	}
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.

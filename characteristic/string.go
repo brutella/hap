@@ -1,6 +1,8 @@
 package characteristic
 
 import (
+	"github.com/brutella/hap/log"
+
 	"net/http"
 )
 
@@ -29,6 +31,22 @@ func (c *String) Value() string {
 	}
 
 	return v.(string)
+}
+
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
+// if the value is going to be updated from a request.
+func (c *String) OnSetRemoteValue(fn func(v string) error) {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+		if r == nil {
+			return 0
+		}
+
+		if err := fn(v.(string)); err != nil {
+			log.Debug.Println(err)
+			return -70402
+		}
+		return 0
+	}
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.

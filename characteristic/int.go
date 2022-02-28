@@ -1,6 +1,8 @@
 package characteristic
 
 import (
+	"github.com/brutella/hap/log"
+
 	"net/http"
 )
 
@@ -51,6 +53,22 @@ func (c *Int) MaxValue() int {
 
 func (c *Int) StepValue() int {
 	return c.StepVal.(int)
+}
+
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
+// if the value is going to be updated from a request.
+func (c *Int) OnSetRemoteValue(fn func(v int) error) {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+		if r == nil {
+			return 0
+		}
+
+		if err := fn(v.(int)); err != nil {
+			log.Debug.Println(err)
+			return -70402
+		}
+		return 0
+	}
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
