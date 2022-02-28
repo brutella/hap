@@ -127,19 +127,10 @@ func (c *C) SetValueRequest(v interface{}, req *http.Request) int {
 		return -70404
 	}
 
-	if c.SetValueRequestFunc != nil {
-		if s := c.SetValueRequestFunc(v, req); s != 0 {
-			return s
-		}
-	}
-
-	c.setValue(v, req)
-
-	// no error
-	return 0
+	return c.setValue(v, req)
 }
 
-func (c *C) setValue(v interface{}, req *http.Request) {
+func (c *C) setValue(v interface{}, req *http.Request) int {
 	newVal := c.convert(v)
 
 	// Value must be within min and max
@@ -152,7 +143,14 @@ func (c *C) setValue(v interface{}, req *http.Request) {
 
 	// ignore the same newVal
 	if c.Val == newVal && !c.updateOnSameValue {
-		return
+		// no error
+		return 0
+	}
+
+	if c.SetValueRequestFunc != nil {
+		if s := c.SetValueRequestFunc(newVal, req); s != 0 {
+			return s
+		}
 	}
 
 	// reference old value
@@ -165,6 +163,8 @@ func (c *C) setValue(v interface{}, req *http.Request) {
 	for _, fn := range c.valUpdateFuncs {
 		fn(c, newVal, oldVal, req)
 	}
+
+	return 0
 }
 
 // ValueRequest returns the value of C and a status code.
