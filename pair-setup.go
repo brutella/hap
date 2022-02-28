@@ -73,7 +73,7 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 		default:
 			log.Info.Println("invalid state", data.State)
 			res.WriteHeader(http.StatusBadRequest)
-			tlv8Error(res, Step2, TlvErrorUnknown)
+			tlv8Error(res, data.State+1, TlvErrorUnknown)
 		}
 	case MethodPairMFi:
 		res.WriteHeader(http.StatusBadRequest)
@@ -112,7 +112,7 @@ func (srv *Server) pairSetupStep1(res http.ResponseWriter, req *http.Request, da
 	ss, err := newPairSetupSession(srv.uuid, srv.fmtPin())
 	if err != nil {
 		res.WriteHeader(http.StatusInternalServerError)
-		tlv8Error(res, data.State+1, TlvErrorUnknown)
+		tlv8Error(res, Step2, TlvErrorUnknown)
 		return
 	}
 	setSession(req.RemoteAddr, ss)
@@ -137,20 +137,20 @@ func (srv *Server) pairSetupStep3(res http.ResponseWriter, req *http.Request, da
 	err = ses.SetupPrivateKeyFromClientPublicKey(data.PublicKey)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, data.State+1, TlvErrorInvalidRequest)
+		tlv8Error(res, Step4, TlvErrorInvalidRequest)
 		return
 	}
 	proof, err := ses.ProofFromClientProof(data.Proof)
 	if err != nil {
 		log.Info.Println(err)
-		tlv8Error(res, data.State+1, TlvErrorInvalidRequest)
+		tlv8Error(res, Step4, TlvErrorInvalidRequest)
 		return
 	}
 
 	err = ses.SetupEncryptionKey([]byte("Pair-Setup-Encrypt-Salt"), []byte("Pair-Setup-Encrypt-Info"))
 	if err != nil {
 		log.Info.Println("pair-setup:", err)
-		tlv8Error(res, data.State+1, TlvErrorInvalidRequest)
+		tlv8Error(res, Step4, TlvErrorInvalidRequest)
 		return
 	}
 
