@@ -80,12 +80,12 @@ type C struct {
 	Events map[string]bool
 
 	// ValueRequestFunc is called when the value of C is requested.
-	// The http request is non-nil, if the value of C is requested.
-	// by an HTTP request coming from a paired controller.
-	// The first return value of this function is the value of C.
-	// If the second argument is non-zero, the server responds with the
-	// HTTP status code 500 Internal Server Error.
-	ValueRequestFunc func(request *http.Request) (interface{}, int)
+	// If the value is requested by an http request coming from a
+	// paired controller, request is non-nil.
+	// If the returned code is non-zero, the server responds with the
+	// HTTP status code 500 Internal Server Error and the code in the repsonse body.
+	// If the returned code is zero, than value is included in the response body.
+	ValueRequestFunc func(request *http.Request) (value interface{}, code int)
 
 	// SetValueRequestFunc is called when the value of C is updated.
 	// The first argument "value" is the new value of C.
@@ -112,22 +112,22 @@ func New() *C {
 	}
 }
 
-// OnCValueUpdate register the provided function, which is called
+// OnCValueUpdate register the given function which is called
 // when the value of the characteristic is updated.
 func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 	c.valUpdateFuncs = append(c.valUpdateFuncs, fn)
 }
 
-// Sets the value of c to v.
-// The function is called if the value is updated from an http request.
-func (c *C) SetValueRequest(v interface{}, req *http.Request) int {
+// Sets the value of c to val and returns a status code.
+// The server invokes this function when the value is updated by an http request.
+func (c *C) SetValueRequest(val interface{}, req *http.Request) int {
 	// check write permission
 	if !c.IsWritable() {
-		log.Info.Printf("writing %v by %s not allowed\n", v, req.RemoteAddr)
+		log.Info.Printf("writing %v by %s not allowed\n", val, req.RemoteAddr)
 		return -70404
 	}
 
-	return c.setValue(v, req)
+	return c.setValue(val, req)
 }
 
 func (c *C) setValue(v interface{}, req *http.Request) int {
@@ -168,7 +168,8 @@ func (c *C) setValue(v interface{}, req *http.Request) int {
 }
 
 // ValueRequest returns the value of C and a status code.
-// if the characteristic is not readable, the status code -70405 is returned.
+// If the value of c cannot be read (because it is writeonly),
+// the status code -70405 is returned.
 func (c *C) ValueRequest(req *http.Request) (interface{}, int) {
 	// check write permission
 	if !c.IsReadable() {
