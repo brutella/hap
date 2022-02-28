@@ -1,5 +1,6 @@
 package hap
 
+// Status codes for json communication.
 const (
 	JsonStatusSuccess                     = 0
 	JsonStatusInsufficientPrivileges      = -70401
@@ -14,6 +15,7 @@ const (
 	JsonStatusInvalidValueInRequest       = -70410
 )
 
+// Error codes for TLV8 communication.
 const (
 	TlvErrorUnknown        = 0x1
 	TlvErrorInvalidRequest = 0x2
@@ -32,4 +34,20 @@ const (
 
 	// HTTPContentTypeHAPJson is the HTTP content type for json data
 	HTTPContentTypeHAPJson = "application/hap+json"
+)
+
+const (
+	MethodPair          byte = 0x0 // pair
+	MethodPairMFi       byte = 0x1 // MFi compliant accessory
+	MethodVerifyPair    byte = 0x2 // verify a pairing
+	MethodAddPairing    byte = 0x3 // add client through secure connection
+	MethodDeletePairing byte = 0x4 // delete pairing through secure connection
+	MethodListPairings  byte = 0x5
+)
+
+const (
+	// PermissionUser is the user permission for a paired controller.
+	PermissionUser byte = 0x0
+	// PermissionAdmin is the administrator permission for a paired controller.
+	PermissionAdmin byte = 0x1
 )

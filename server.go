@@ -421,20 +421,6 @@ func (s *Server) fmtPin() string {
 	return first + "-" + second + "-" + third
 }
 
-const (
-	MethodPair          byte = 0x0 // pair
-	MethodPairMFi       byte = 0x1 // MFi compliant accessory
-	MethodVerifyPair    byte = 0x2 // verify a pairing
-	MethodAddPairing    byte = 0x3 // add client through secure connection
-	MethodDeletePairing byte = 0x4 // delete pairing through secure connection
-	MethodListPairings  byte = 0x5
-)
-
-const (
-	PermissionUser  byte = 0x0
-	PermissionAdmin byte = 0x1
-)
-
 // RemoveAccentsFromString removes accent characters from string
 // From https://stackoverflow.com/a/40405242/424814
 func removeAccentsFromString(v string) string {

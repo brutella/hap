@@ -155,12 +155,6 @@ func (st *storer) GetString(key string) (string, error) {
 	return string(b), err
 }
 
-// KeyPair holds public and private key.
-type KeyPair struct {
-	Public  []byte
-	Private []byte
-}
-
 func (st *storer) KeyPair() (KeyPair, error) {
 	var kp KeyPair
 	b, err := st.Get("keypair")
@@ -184,13 +178,6 @@ func (st *storer) SaveKeyPair(kp KeyPair) error {
 
 func (st *storer) DeleteKeyPair(name string) error {
 	return st.Delete("keypair")
-}
-
-// Pairing holds the name and public key of a client.
-type Pairing struct {
-	Name       string
-	PublicKey  []byte
-	Permission byte
 }
 
 // Pairing returns the pairing with the given name.
