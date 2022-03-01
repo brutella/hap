@@ -7,8 +7,8 @@ import (
 )
 
 func (srv *Server) identify(res http.ResponseWriter, req *http.Request) {
-	if !srv.IsAuthorized(req) {
-		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+	if srv.isPaired() {
+		log.Info.Printf("request only valid if unpaired")
 		JsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
@@ -17,5 +17,5 @@ func (srv *Server) identify(res http.ResponseWriter, req *http.Request) {
 		srv.a.IdentifyFunc(req)
 	}
 
-	JsonOK(res, struct{}{})
+	res.WriteHeader(http.StatusNoContent)
 }

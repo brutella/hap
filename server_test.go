@@ -63,7 +63,7 @@ func TestIdentify(t *testing.T) {
 	s.identify(w, req)
 
 	r := w.Result()
-	if is, want := r.StatusCode, http.StatusOK; is != want {
+	if is, want := r.StatusCode, http.StatusNoContent; is != want {
 		t.Fatalf("%v != %v", is, want)
 	}
 
