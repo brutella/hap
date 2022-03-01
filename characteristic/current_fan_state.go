@@ -1,5 +1,6 @@
-// THIS FILE IS AUTO-GENERATED
 package characteristic
+
+// THIS FILE IS AUTO-GENERATED
 
 const (
 	CurrentFanStateInactive   int = 0

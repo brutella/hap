@@ -133,7 +133,7 @@ a.Switch.On.OnValueRemoteUpdate(func(on bool) {
 })
 ```
 
-If you want to change the state of a switch programmatically, you call [SetValue(...)](https://github.com/brutella/hap/blob/master/characteristic/bool.go#L20).
+If you want to change the state of a switch programmatically, you call [SetValue(...)](https://pkg.go.dev/github.com/brutella/hap/characteristic#Bool.SetValue).
 
 ```go
 a.Switch.On.SetValue(true)

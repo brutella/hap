@@ -1,5 +1,6 @@
-// THIS FILE IS AUTO-GENERATED
 package characteristic
+
+// THIS FILE IS AUTO-GENERATED
 
 const (
 	StatusTamperedNotTampered int = 0

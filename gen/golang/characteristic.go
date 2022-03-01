@@ -15,8 +15,8 @@ import (
 )
 
 // CharStructTemplate is template for a characteristic struct.
-const CharStructTemplate = `// THIS FILE IS AUTO-GENERATED
-package characteristic
+const CharStructTemplate = `package characteristic
+// THIS FILE IS AUTO-GENERATED
 
 {{if .HasConsts}}
 const (
