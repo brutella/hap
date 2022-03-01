@@ -5,7 +5,8 @@ import (
 	"net/http"
 )
 
-func jsonOK(res http.ResponseWriter, body interface{}) error {
+// JsonOK sends an HTTP 200 (ok) response.
+func JsonOK(res http.ResponseWriter, body interface{}) error {
 	b, err := json.Marshal(body)
 	if err != nil {
 		return err
@@ -17,7 +18,8 @@ func jsonOK(res http.ResponseWriter, body interface{}) error {
 	return err
 }
 
-func jsonMultiStatus(res http.ResponseWriter, body interface{}) error {
+// JsonMultiStatus sends an HTTP 207 (multi status) response.
+func JsonMultiStatus(res http.ResponseWriter, body interface{}) error {
 	b, err := json.Marshal(body)
 	if err != nil {
 		return err
@@ -29,7 +31,8 @@ func jsonMultiStatus(res http.ResponseWriter, body interface{}) error {
 	return err
 }
 
-func jsonError(res http.ResponseWriter, status int) error {
+// JsonErrors sends an HTTP 500 (bad request) response including the status in the body.
+func JsonError(res http.ResponseWriter, status int) error {
 	resp := struct {
 		Status int `json:"status"`
 	}{

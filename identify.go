@@ -1,12 +1,15 @@
 package hap
 
 import (
+	"github.com/brutella/hap/log"
+
 	"net/http"
 )
 
 func (srv *Server) identify(res http.ResponseWriter, req *http.Request) {
-	if srv.isPaired() {
-		jsonError(res, JsonStatusInsufficientPrivileges)
+	if !srv.IsAuthorized(req) {
+		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+		JsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
 
@@ -14,5 +17,5 @@ func (srv *Server) identify(res http.ResponseWriter, req *http.Request) {
 		srv.a.IdentifyFunc(req)
 	}
 
-	jsonOK(res, struct{}{})
+	JsonOK(res, struct{}{})
 }

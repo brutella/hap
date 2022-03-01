@@ -33,16 +33,16 @@ type characteristicData struct {
 }
 
 func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request) {
-	if !srv.isPaired() {
-		log.Info.Println("not paired")
-		jsonError(res, JsonStatusInsufficientPrivileges)
+	if !srv.IsAuthorized(req) {
+		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+		JsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
 
 	// id=1.4,1.5
 	v := req.FormValue("id")
 	if len(v) == 0 {
-		jsonError(res, JsonStatusInvalidValueInRequest)
+		JsonError(res, JsonStatusInvalidValueInRequest)
 		return
 	}
 
@@ -123,16 +123,16 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 	log.Debug.Println(toJSON(resp))
 
 	if err {
-		jsonMultiStatus(res, resp)
+		JsonMultiStatus(res, resp)
 	} else {
-		jsonOK(res, resp)
+		JsonOK(res, resp)
 	}
 }
 
 func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request) {
-	if !srv.isPaired() {
-		log.Info.Println("not paired")
-		jsonError(res, JsonStatusInsufficientPrivileges)
+	if !srv.IsAuthorized(req) {
+		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+		JsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
 
@@ -141,7 +141,7 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 	}{}
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
-		jsonError(res, JsonStatusInvalidValueInRequest)
+		JsonError(res, JsonStatusInvalidValueInRequest)
 		return
 	}
 
@@ -202,7 +202,7 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 	}{arr}
 
 	log.Debug.Println(toJSON(resp))
-	jsonMultiStatus(res, resp)
+	JsonMultiStatus(res, resp)
 }
 
 func (srv *Server) findC(aid, iid uint64) *characteristic.C {

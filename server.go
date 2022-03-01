@@ -143,6 +143,13 @@ func (s *Server) ServeMux() ServeMux {
 	return s.ss.Handler.(*chi.Mux)
 }
 
+// IsAuthorized returns true if the provided
+// request is authorized to access accessory data.
+func (s *Server) IsAuthorized(request *http.Request) bool {
+	ss, _ := getSession(request.RemoteAddr)
+	return ss != nil
+}
+
 // ListenAndServe starts the server.
 func (s *Server) ListenAndServe(ctx context.Context) error {
 	err := s.prepare()

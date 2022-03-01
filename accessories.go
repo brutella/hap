@@ -8,9 +8,9 @@ import (
 )
 
 func (srv *Server) getAccessories(res http.ResponseWriter, req *http.Request) {
-	if !srv.isPaired() {
-		log.Info.Println("not paired")
-		jsonError(res, JsonStatusInsufficientPrivileges)
+	if !srv.IsAuthorized(req) {
+		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+		JsonError(res, JsonStatusInsufficientPrivileges)
 		return
 	}
 
@@ -23,5 +23,5 @@ func (srv *Server) getAccessories(res http.ResponseWriter, req *http.Request) {
 	}{as}
 
 	log.Debug.Println(toJSON(p))
-	jsonOK(res, p)
+	JsonOK(res, p)
 }
