@@ -9,8 +9,8 @@ type chunkedWriter struct {
 	chunk int
 }
 
-// newChunkedWriter returns a writer which writes bytes in chunkes of specified size.
-func newChunkedWriter(wr io.Writer, chunk int) io.Writer {
+// NewChunkedWriter returns a writer which writes bytes in chunkes of specified size.
+func NewChunkedWriter(wr io.Writer, chunk int) io.Writer {
 	return &chunkedWriter{wr, chunk}
 }
 

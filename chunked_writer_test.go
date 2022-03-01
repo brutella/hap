@@ -7,7 +7,7 @@ import (
 
 func TestChunkedWriter(t *testing.T) {
 	var b bytes.Buffer
-	wr := newChunkedWriter(&b, 2)
+	wr := NewChunkedWriter(&b, 2)
 	n, err := wr.Write([]byte("Hello World"))
 	if err != nil {
 		t.Fatal(err)
