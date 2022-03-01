@@ -5,26 +5,6 @@ import (
 	"testing"
 )
 
-func TestCharacteristicValue(t *testing.T) {
-
-	c := NewBrightness()
-	c.Val = 0
-
-	n := 0
-	c.ValueRequestFunc = func(*http.Request) (interface{}, int) {
-		n++
-		return n, 0
-	}
-
-	if is, want := c.Value(), 1; is != want {
-		t.Fatalf("is=%v want=%v", is, want)
-	}
-
-	if is, want := c.Value(), 2; is != want {
-		t.Fatalf("is=%v want=%v", is, want)
-	}
-}
-
 func TestCharacteristicSetValue(t *testing.T) {
 	req := &http.Request{}
 	c := NewBrightness()

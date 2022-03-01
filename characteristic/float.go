@@ -35,12 +35,7 @@ func (c *Float) SetStepValue(v float64) {
 
 // Value returns the value of c as float64.
 func (c *Float) Value() float64 {
-	v, _ := c.C.valueRequest(nil)
-	if v == nil {
-		return 0
-	}
-
-	return v.(float64)
+	return c.C.value().(float64)
 }
 
 func (c *Float) MinValue() float64 {
@@ -55,14 +50,11 @@ func (c *Float) StepValue() float64 {
 	return c.StepVal.(float64)
 }
 
-// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
-// if the value is going to be updated from a request.
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn.
+// If the function returns an error, the code -70402 is
+// included in the HTTP response.
 func (c *Float) OnSetRemoteValue(fn func(v float64) error) {
 	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
-		if r == nil {
-			return 0
-		}
-
 		if err := fn(v.(float64)); err != nil {
 			log.Debug.Println(err)
 			return -70402
@@ -72,14 +64,14 @@ func (c *Float) OnSetRemoteValue(fn func(v float64) error) {
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
-// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
+// If the provided http request is not nil, the value was updated by a paired controller (ex. iOS device).
 func (c *Float) OnValueUpdate(fn func(new, old float64, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(float64), old.(float64), r)
 	})
 }
 
-// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
+// OnValueRemoteUpdate calls fn when the value of the C was updated by a paired controller (ex. iOS device).
 func (c *Float) OnValueRemoteUpdate(fn func(v float64)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {

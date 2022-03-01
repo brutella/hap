@@ -25,22 +25,14 @@ func (c *Bool) SetValue(v bool) {
 
 // Value returns the value of c as bool.
 func (c *Bool) Value() bool {
-	v, _ := c.C.valueRequest(nil)
-	if v == nil {
-		return false
-	}
-
-	return v.(bool)
+	return c.C.value().(bool)
 }
 
-// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
-// if the value is going to be updated from a request.
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn.
+// If the function returns an error, the code -70402 is
+// included in the HTTP response.
 func (c *Bool) OnSetRemoteValue(fn func(v bool) error) {
 	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
-		if r == nil {
-			return 0
-		}
-
 		if err := fn(v.(bool)); err != nil {
 			log.Debug.Println(err)
 			return -70402
@@ -50,14 +42,14 @@ func (c *Bool) OnSetRemoteValue(fn func(v bool) error) {
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
-// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
-func (c *Bool) OnValueUpdate(fn func(old, new bool, r *http.Request)) {
+// If the provided http request is not nil, the value was updated by a paired controller (ex. iOS device).
+func (c *Bool) OnValueUpdate(fn func(old, new bool, req *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(bool), old.(bool), r)
 	})
 }
 
-// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
+// OnValueRemoteUpdate calls fn when the value of the C was updated by a paired controller (ex. iOS device).
 func (c *Bool) OnValueRemoteUpdate(fn func(v bool)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {

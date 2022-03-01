@@ -95,11 +95,6 @@ func TestSetValueRequestSuccess(t *testing.T) {
 		if is, want := v.(bool), true; is != want {
 			t.Fatalf("%v != %v", is, want)
 		}
-
-		if r == nil {
-			t.Fatalf("request expected but got nil")
-		}
-
 		setValueRequestFunc = true
 
 		return 0
@@ -112,10 +107,6 @@ func TestSetValueRequestSuccess(t *testing.T) {
 
 		if is, want := old, false; is != want {
 			t.Fatalf("%v != %v", is, want)
-		}
-
-		if r == nil {
-			t.Fatalf("request expected but got nil")
 		}
 
 		onValueUpdateFunc = true

@@ -79,19 +79,22 @@ type C struct {
 	// Stores which connected client has events enabled for this characteristic.
 	Events map[string]bool
 
-	// ValueRequestFunc is called when the value of C is requested.
-	// If the value is requested by an http request coming from a
-	// paired controller, request is non-nil.
-	// If the returned code is non-zero, the server responds with the
-	// HTTP status code 500 Internal Server Error and the code in the repsonse body.
-	// If the returned code is zero, than value is included in the response body.
+	// ValueRequestFunc is called when the value of C is requested by a
+	// paired controller via an HTTP request.
+	// If the value of C represents the state of a remote object, you can use
+	// this function to communicate with that object (ex. over the network).
+	// If the communication fails, you can return a code != 0.
+	// In this case, the server responds with the HTTP status code 500 and the code
+	// in the response body (as defined in HAP-R2 6.7.1.4 HAP Status Codes).
 	ValueRequestFunc func(request *http.Request) (value interface{}, code int)
 
-	// SetValueRequestFunc is called when the value of C is updated.
-	// The first argument "value" is the new value of C.
-	// The second argument "request" is non-nil, if the value of C is
-	// updated from an HTTP request coming from a paired controller.
-	// An error is inidcated if the return value is non-zero.
+	// SetValueRequestFunc is called when the value of C is updated by an
+	// HTTP request coming from a paired controller.
+	// If the value of C represents the state of a remote object, you can use
+	// this function to communicate with that object (ex. over the network).
+	// If the communication fails, you can return a code != 0.
+	// In this case, the server responds with the HTTP status code 500 and the code
+	// in the response body (as defined in HAP-R2 6.7.1.4 HAP Status Codes).
 	SetValueRequestFunc func(value interface{}, request *http.Request) int
 
 	// A list of update value functions.
@@ -147,7 +150,7 @@ func (c *C) setValue(v interface{}, req *http.Request) int {
 		return 0
 	}
 
-	if c.SetValueRequestFunc != nil {
+	if c.SetValueRequestFunc != nil && req != nil {
 		if s := c.SetValueRequestFunc(newVal, req); s != 0 {
 			return s
 		}
@@ -177,16 +180,16 @@ func (c *C) ValueRequest(req *http.Request) (interface{}, int) {
 		return nil, -70405
 	}
 
-	return c.valueRequest(req)
-}
-
-// value returns the value of C and a status code.
-func (c *C) valueRequest(req *http.Request) (interface{}, int) {
 	if c.ValueRequestFunc != nil {
 		return c.ValueRequestFunc(req)
 	}
 
-	return c.Val, 0
+	return c.value(), 0
+}
+
+// value returns the value of C and a status code.
+func (c *C) value() interface{} {
+	return c.Val
 }
 
 func (c *C) IsWritable() bool {
@@ -252,9 +255,7 @@ func (c *C) MarshalJSON() ([]byte, error) {
 	}
 
 	if c.IsReadable() {
-		if v, _ := c.valueRequest(nil); v != nil {
-			d.Value = v
-		}
+		d.Value = c.value()
 	}
 
 	return json.Marshal(&d)

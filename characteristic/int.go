@@ -35,12 +35,7 @@ func (c *Int) SetStepValue(v int) {
 
 // Value returns the value of c as integer.
 func (c *Int) Value() int {
-	v, _ := c.C.valueRequest(nil)
-	if v == nil {
-		return 0
-	}
-
-	return v.(int)
+	return c.C.value().(int)
 }
 
 func (c *Int) MinValue() int {
@@ -55,14 +50,11 @@ func (c *Int) StepValue() int {
 	return c.StepVal.(int)
 }
 
-// OnSetRemoteValue set c.SetValueRequestFunc and calls fn only
-// if the value is going to be updated from a request.
+// OnSetRemoteValue set c.SetValueRequestFunc and calls fn.
+// If the function returns an error, the code -70402 is
+// included in the HTTP response.
 func (c *Int) OnSetRemoteValue(fn func(v int) error) {
 	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
-		if r == nil {
-			return 0
-		}
-
 		if err := fn(v.(int)); err != nil {
 			log.Debug.Println(err)
 			return -70402
@@ -72,14 +64,14 @@ func (c *Int) OnSetRemoteValue(fn func(v int) error) {
 }
 
 // OnValueRemoteUpdate calls fn when the value of the characteristic was updated.
-// If the provided http request is not nil, the value was updated by a client (ex. iOS device).
+// If the provided http request is not nil, the value was updated by a paired controller (ex. iOS device).
 func (c *Int) OnValueUpdate(fn func(new, old int, r *http.Request)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		fn(new.(int), old.(int), r)
 	})
 }
 
-// OnValueRemoteUpdate calls fn when the value of the characteristic was updated by a client.
+// OnValueRemoteUpdate calls fn when the value of the C was updated by a paired controller (ex. iOS device).
 func (c *Int) OnValueRemoteUpdate(fn func(v int)) {
 	c.OnCValueUpdate(func(c *C, new, old interface{}, r *http.Request) {
 		if r != nil {
