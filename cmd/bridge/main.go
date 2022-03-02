@@ -6,6 +6,7 @@ import (
 	"github.com/brutella/hap/log"
 
 	"context"
+	syslog "log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -32,6 +33,9 @@ func main() {
 	if err != nil {
 		log.Info.Panic(err)
 	}
+
+	mylogger := syslog.New(os.Stdout, "BLUB ", syslog.LstdFlags|syslog.Lshortfile)
+	log.Debug = &log.Logger{mylogger}
 
 	c := make(chan os.Signal)
 	signal.Notify(c, os.Interrupt)

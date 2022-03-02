@@ -76,6 +76,12 @@ type C struct {
 	// StepVal is the step value of Val (only for integers and floats)
 	StepVal interface{}
 
+	// ValidVals are the valid values for integer characteristics.
+	ValidVals []int
+
+	// ValidRange is a 2 element array the valid range start and end.
+	ValidRange []int
+
 	// Stores which connected client has events enabled for this characteristic.
 	Events map[string]bool
 
@@ -148,6 +154,10 @@ func (c *C) setValue(v interface{}, req *http.Request) int {
 	if c.Val == newVal && !c.updateOnSameValue {
 		// no error
 		return 0
+	}
+
+	if !c.validVal(newVal) {
+		return -70410
 	}
 
 	if c.SetValueRequestFunc != nil && req != nil {
@@ -237,10 +247,12 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		Format string      `json:"format"`
 		Unit   string      `json:"unit,omitempty"`
 
-		MaxLen    int         `json:"maxLen,omitempty"`
-		MaxValue  interface{} `json:"maxValue,omitempty"`
-		MinValue  interface{} `json:"minValue,omitempty"`
-		StepValue interface{} `json:"minStep,omitempty"`
+		MaxLen      int         `json:"maxLen,omitempty"`
+		MaxValue    interface{} `json:"maxValue,omitempty"`
+		MinValue    interface{} `json:"minValue,omitempty"`
+		StepValue   interface{} `json:"minStep,omitempty"`
+		ValidValues []int       `json:"valid-values,omitempty"`
+		ValidRange  []int       `json:"valid-values-range,omitempty"`
 	}{
 		Id:          c.Id,
 		Type:        c.Type,
@@ -252,6 +264,8 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		MaxValue:    c.MaxVal,
 		MinValue:    c.MinVal,
 		StepValue:   c.StepVal,
+		ValidValues: c.ValidVals,
+		ValidRange:  c.ValidRange,
 	}
 
 	if c.IsReadable() {
@@ -298,4 +312,22 @@ func (c *C) convert(v interface{}) interface{} {
 	default:
 		return v
 	}
+}
+
+func (c *C) validVal(v interface{}) bool {
+	if len(c.ValidVals) > 0 {
+		for _, val := range c.ValidVals {
+			if val == v {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	if iv, ok := v.(int); ok && len(c.ValidRange) == 2 {
+		return c.ValidRange[0] <= iv && c.ValidRange[1] >= iv
+	}
+
+	return true
 }

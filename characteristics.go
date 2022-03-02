@@ -27,6 +27,8 @@ type characteristicData struct {
 	MaxValue    interface{} `json:"maxValue,omitempty"`
 	MinStep     interface{} `json:"minStep,omitempty"`
 	MaxLen      *int        `json:"maxLen,omitempty"`
+	ValidValues []int       `json:"valid-values,omitempty"`
+	ValidRange  []int       `json:"valid-values-range,omitempty"`
 
 	Remote   *bool `json:"remote,omitempty"`
 	Response *bool `json:"r,omitempty"`
@@ -95,6 +97,14 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 
 			if c.MaxLen > 0 {
 				cdata.MaxLen = &c.MaxLen
+			}
+
+			if len(c.ValidVals) > 0 {
+				cdata.ValidValues = c.ValidVals
+			}
+
+			if len(c.ValidRange) > 0 {
+				cdata.ValidRange = c.ValidRange
 			}
 		}
 

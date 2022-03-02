@@ -22,9 +22,18 @@ func NewHumidifier() *Humidifier {
 	s.AddC(s.CurrentRelativeHumidity.C)
 
 	s.CurrentHumidifierDehumidifierState = characteristic.NewCurrentHumidifierDehumidifierState()
+	s.CurrentHumidifierDehumidifierState.ValidVals = []int{
+		characteristic.CurrentHumidifierDehumidifierStateInactive,
+		characteristic.CurrentHumidifierDehumidifierStateIdle,
+		characteristic.CurrentHumidifierDehumidifierStateHumidifying,
+	}
 	s.AddC(s.CurrentHumidifierDehumidifierState.C)
 
 	s.TargetHumidifierDehumidifierState = characteristic.NewTargetHumidifierDehumidifierState()
+	s.TargetHumidifierDehumidifierState.ValidVals = []int{
+		characteristic.TargetHumidifierDehumidifierStateHumidifier,
+	}
+	s.TargetHumidifierDehumidifierState.SetValue(characteristic.TargetHumidifierDehumidifierStateHumidifier)
 	s.AddC(s.TargetHumidifierDehumidifierState.C)
 
 	s.Active = characteristic.NewActive()

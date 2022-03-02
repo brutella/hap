@@ -3,6 +3,7 @@ package characteristic
 import (
 	"github.com/brutella/hap/log"
 
+	"fmt"
 	"net/http"
 )
 
@@ -17,8 +18,16 @@ func NewInt(t string) *Int {
 }
 
 // SetValue sets a value
-func (c *Int) SetValue(v int) {
-	c.setValue(v, nil)
+func (c *Int) SetValue(v int) error {
+	code := c.setValue(v, nil)
+	switch code {
+	case -70410:
+		return fmt.Errorf("invalid value %d", v)
+	case 0:
+		return nil
+	default:
+		return fmt.Errorf("c: %d", code)
+	}
 }
 
 func (c *Int) SetMinValue(v int) {

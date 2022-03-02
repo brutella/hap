@@ -22,9 +22,18 @@ func NewHeater() *Heater {
 	s.AddC(s.Active.C)
 
 	s.CurrentHeaterCoolerState = characteristic.NewCurrentHeaterCoolerState()
+	s.CurrentHeaterCoolerState.ValidVals = []int{
+		characteristic.CurrentHeaterCoolerStateInactive,
+		characteristic.CurrentHeaterCoolerStateIdle,
+		characteristic.CurrentHeaterCoolerStateHeating,
+	}
 	s.AddC(s.CurrentHeaterCoolerState.C)
 
 	s.TargetHeaterCoolerState = characteristic.NewTargetHeaterCoolerState()
+	s.TargetHeaterCoolerState.ValidVals = []int{
+		characteristic.TargetHeaterCoolerStateAuto,
+		characteristic.TargetHeaterCoolerStateHeat,
+	}
 	s.AddC(s.TargetHeaterCoolerState.C)
 
 	s.CurrentTemperature = characteristic.NewCurrentTemperature()

@@ -141,3 +141,28 @@ func TestSetValueRequestFunc(t *testing.T) {
 		t.Fatalf("is=%v want=%v", is, want)
 	}
 }
+
+func TestValidValues(t *testing.T) {
+	c := NewTargetHeaterCoolerState()
+	c.ValidVals = []int{TargetHeaterCoolerStateAuto, TargetHeaterCoolerStateHeat}
+
+	if err := c.SetValue(TargetHeaterCoolerStateCool); err == nil {
+		t.Fatal("invalid value error expected")
+	}
+
+	if err := c.SetValue(TargetHeaterCoolerStateHeat); err != nil {
+		t.Fatal("no error expected")
+	}
+}
+func TestValidRange(t *testing.T) {
+	c := NewTargetHeaterCoolerState()
+	c.ValidRange = []int{TargetHeaterCoolerStateAuto, TargetHeaterCoolerStateHeat}
+
+	if err := c.SetValue(TargetHeaterCoolerStateCool); err == nil {
+		t.Fatal("invalid value error expected")
+	}
+
+	if err := c.SetValue(TargetHeaterCoolerStateHeat); err != nil {
+		t.Fatal("no error expected")
+	}
+}
