@@ -397,9 +397,9 @@ func (s *Server) service() (dnssd.Service, error) {
 		Name:   removeAccentsFromString(stripped),
 		Type:   "_hap._tcp",
 		Domain: "local",
-		// Host:   strings.Replace(s.uuid, ":", "", -1), // use the id (without the colons) to get unique hostnames
-		Text: s.txtRecords(),
-		Port: s.port,
+		Host:   strings.Replace(s.uuid, ":", "", -1), // use the id (without the colons) to get unique hostnames
+		Text:   s.txtRecords(),
+		Port:   s.port,
 	}
 
 	return dnssd.NewService(cfg)
