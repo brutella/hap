@@ -5,6 +5,7 @@ import (
 
 	"bufio"
 	"bytes"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net"
@@ -74,7 +75,7 @@ func (c *conn) Read(b []byte) (int, error) {
 		if err != nil {
 			if neterr, ok := err.(net.Error); ok && neterr.Timeout() {
 				// Ignore timeout error #77
-			} else if err == net.ErrClosed {
+			} else if errors.Is(err, net.ErrClosed) {
 				// Ignore close errors
 			} else {
 				log.Debug.Println("decryption failed:", err)

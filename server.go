@@ -213,8 +213,8 @@ func (s *Server) listenAndServe(ctx context.Context) error {
 	serverStop := make(chan struct{})
 	go func() {
 		<-serverCtx.Done()
-		ln.Close()
 		s.ss.Close()
+		ln.Close()
 		log.Debug.Println("http server stopped")
 		serverStop <- struct{}{}
 	}()
