@@ -167,3 +167,35 @@ func TestSetValueRequestFailure(t *testing.T) {
 		t.Fatalf("%v != %v", is, want)
 	}
 }
+
+func TestGetProgrammableSwitchEvent(t *testing.T) {
+	a := accessory.New(accessory.Info{Name: "ABC"}, accessory.TypeProgrammableSwitch)
+	s := service.NewStatelessProgrammableSwitch()
+	c := s.ProgrammableSwitchEvent
+	a.AddS(s.S)
+	srv, err := NewServer(NewMemStore(), a)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/characteristics?id=%d.%d", a.Id, c.Id), nil)
+	w := httptest.NewRecorder()
+
+	setSession(req.RemoteAddr, &session{})
+	srv.ss.Handler.ServeHTTP(w, req)
+
+	r := w.Result()
+	if is, want := r.StatusCode, http.StatusOK; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"value\":null}]}", a.Id, c.Id)
+	if is, want := string(b), body; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+}

@@ -1,6 +1,8 @@
 package characteristic
 
-// THIS FILE IS AUTO-GENERATED
+import (
+	"net/http"
+)
 
 const (
 	ProgrammableSwitchEventSinglePress int = 0
@@ -18,8 +20,13 @@ func NewProgrammableSwitchEvent() *ProgrammableSwitchEvent {
 	c := NewInt(TypeProgrammableSwitchEvent)
 	c.Format = FormatUInt8
 	c.Permissions = []string{PermissionRead, PermissionEvents}
-
 	c.SetValue(0)
+
+	// always return nil (HAP 9.75)
+	c.ValueRequestFunc = func(*http.Request) (interface{}, int) {
+		return nil, 0
+	}
+
 	c.updateOnSameValue = true
 
 	return &ProgrammableSwitchEvent{c}

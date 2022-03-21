@@ -241,12 +241,11 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		Id          uint64   `json:"iid"` // managed by accessory
 		Type        string   `json:"type"`
 		Permissions []string `json:"perms"`
-		Description string   `json:"description,omitempty"` // manufacturer description (optional)
+		Format      string   `json:"format"`
 
-		Value  interface{} `json:"value,omitempty"` // nil for write-only characteristics
-		Format string      `json:"format"`
-		Unit   string      `json:"unit,omitempty"`
-
+		Value       *V          `json:"value,omitempty"`
+		Description string      `json:"description,omitempty"` // manufacturer description (optional)
+		Unit        string      `json:"unit,omitempty"`
 		MaxLen      int         `json:"maxLen,omitempty"`
 		MaxValue    interface{} `json:"maxValue,omitempty"`
 		MinValue    interface{} `json:"minValue,omitempty"`
@@ -268,11 +267,24 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		ValidRange:  c.ValidRange,
 	}
 
+	// If the characteristic is readable, the value
+	// must be present in the json representation.
 	if c.IsReadable() {
-		d.Value = c.value()
+		// 2022-03-21 (mah) FIXME provide a http request instead of nil
+		if v, s := c.ValueRequest(nil); s == 0 {
+			d.Value = &V{v}
+		}
 	}
 
 	return json.Marshal(&d)
+}
+
+type V struct {
+	Value interface{}
+}
+
+func (v V) MarshalJSON() ([]byte, error) {
+	return json.Marshal(v.Value)
 }
 
 func (c *C) clampFloat(value float64) interface{} {

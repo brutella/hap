@@ -14,7 +14,7 @@ import (
 type characteristicData struct {
 	Aid   uint64      `json:"aid"`
 	Iid   uint64      `json:"iid"`
-	Value interface{} `json:"value,omitempty"`
+	Value interface{} `json:"value"`
 
 	// optional values
 	Type        *string     `json:"type,omitempty"`
@@ -29,6 +29,15 @@ type characteristicData struct {
 	MaxLen      *int        `json:"maxLen,omitempty"`
 	ValidValues []int       `json:"valid-values,omitempty"`
 	ValidRange  []int       `json:"valid-values-range,omitempty"`
+}
+
+type putCharacteristicData struct {
+	Aid uint64 `json:"aid"`
+	Iid uint64 `json:"iid"`
+
+	Value  interface{} `json:"value,omitempty"`
+	Status *int        `json:"status,omitempty"`
+	Events *bool       `json:"ev,omitempty"`
 
 	Remote   *bool `json:"remote,omitempty"`
 	Response *bool `json:"r,omitempty"`
@@ -147,7 +156,7 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	data := struct {
-		Cs []characteristicData `json:"characteristics"`
+		Cs []putCharacteristicData `json:"characteristics"`
 	}{}
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
@@ -157,10 +166,10 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 
 	log.Debug.Println(toJSON(data))
 
-	arr := []*characteristicData{}
+	arr := []*putCharacteristicData{}
 	for _, d := range data.Cs {
 		c := srv.findC(d.Aid, d.Iid)
-		cdata := &characteristicData{
+		cdata := &putCharacteristicData{
 			Aid: d.Aid,
 			Iid: d.Iid,
 		}
@@ -208,7 +217,7 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	resp := struct {
-		Characteristics []*characteristicData `json:"characteristics"`
+		Characteristics []*putCharacteristicData `json:"characteristics"`
 	}{arr}
 
 	log.Debug.Println(toJSON(resp))

@@ -65,6 +65,8 @@ type ServeMux interface {
 	Handle(pattern string, handler http.Handler)
 	// HandleFuncs registers the handler function for the given pattern.
 	HandleFunc(pattern string, handler http.HandlerFunc)
+	// Mount attaches another http.Handler along ./pattern/*
+	Mount(pattern string, handler http.Handler)
 }
 
 // NewServer returns a new server given a store (to persist data) and accessories.
