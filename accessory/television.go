@@ -14,10 +14,11 @@ type Television struct {
 func NewTelevision(info Info) *Television {
 	a := Television{}
 	a.A = New(info, TypeTelevision)
-	a.Television = service.NewTelevision()
-	a.Speaker = service.NewSpeaker()
 
+	a.Television = service.NewTelevision()
 	a.AddS(a.Television.S)
+
+	a.Speaker = service.NewSpeaker()
 	a.AddS(a.Speaker.S)
 
 	return &a

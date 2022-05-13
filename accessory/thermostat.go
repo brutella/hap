@@ -6,7 +6,6 @@ import (
 
 type Thermostat struct {
 	*A
-
 	Thermostat *service.Thermostat
 }
 
@@ -14,8 +13,8 @@ type Thermostat struct {
 func NewThermostat(info Info) *Thermostat {
 	a := Thermostat{}
 	a.A = New(info, TypeThermostat)
-	a.Thermostat = service.NewThermostat()
 
+	a.Thermostat = service.NewThermostat()
 	a.AddS(a.Thermostat.S)
 
 	return &a

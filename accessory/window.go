@@ -13,6 +13,7 @@ type Window struct {
 func NewWindow(info Info) *Window {
 	a := Window{}
 	a.A = New(info, TypeWindow)
+
 	a.Window = service.NewWindow()
 	a.AddS(a.Window.S)
 

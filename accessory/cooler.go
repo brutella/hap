@@ -13,6 +13,7 @@ type Cooler struct {
 func NewCooler(info Info) *Cooler {
 	a := Cooler{}
 	a.A = New(info, TypeAirConditioner)
+
 	a.Cooler = service.NewCooler()
 	a.AddS(a.Cooler.S)
 

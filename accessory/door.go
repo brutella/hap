@@ -6,19 +6,16 @@ import (
 
 type Door struct {
 	*A
-
 	Door *service.Door
 }
 
 // NewDoor returns a door accessory.
 func NewDoor(info Info) *Door {
-	a := New(info, TypeDoor)
+	a := Door{}
+	a.A = New(info, TypeDoor)
 
-	door := service.NewDoor()
-	a.Ss = append(a.Ss, door.S)
+	a.Door = service.NewDoor()
+	a.AddS(a.Door.S)
 
-	return &Door{
-		A:    a,
-		Door: door,
-	}
+	return &a
 }
