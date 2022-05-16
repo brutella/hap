@@ -6,19 +6,16 @@ import (
 
 type Fan struct {
 	*A
-
 	Fan *service.Fan
 }
 
 // NewFan returns a fan accessory.
 func NewFan(info Info) *Fan {
-	a := New(info, TypeFan)
+	a := Fan{}
+	a.A = New(info, TypeFan)
 
-	fan := service.NewFan()
-	a.Ss = append(a.Ss, fan.S)
+	a.Fan = service.NewFan()
+	a.AddS(a.Fan.S)
 
-	return &Fan{
-		A:   a,
-		Fan: fan,
-	}
+	return &a
 }

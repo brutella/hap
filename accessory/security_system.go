@@ -6,19 +6,16 @@ import (
 
 type SecuritySystem struct {
 	*A
-
 	SecuritySystem *service.SecuritySystem
 }
 
 // NewSecuritySystem returns a security system accessory.
 func NewSecuritySystem(info Info) *SecuritySystem {
-	a := New(info, TypeSecuritySystem)
+	a := SecuritySystem{}
+	a.A = New(info, TypeSecuritySystem)
 
-	garage := service.NewSecuritySystem()
-	a.Ss = append(a.Ss, garage.S)
+	a.SecuritySystem = service.NewSecuritySystem()
+	a.AddS(a.SecuritySystem.S)
 
-	return &SecuritySystem{
-		A:              a,
-		SecuritySystem: garage,
-	}
+	return &a
 }

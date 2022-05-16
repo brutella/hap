@@ -13,6 +13,7 @@ type AirPurifier struct {
 func NewAirPurifier(info Info) *AirPurifier {
 	a := AirPurifier{}
 	a.A = New(info, TypeAirPurifier)
+
 	a.AirPurifier = service.NewAirPurifier()
 	a.AddS(a.AirPurifier.S)
 

@@ -6,19 +6,16 @@ import (
 
 type Faucet struct {
 	*A
-
 	Faucet *service.Faucet
 }
 
 // NewFaucet returns an outlet accessory.
 func NewFaucet(info Info) *Faucet {
-	a := New(info, TypeFaucet)
+	a := Faucet{}
+	a.A = New(info, TypeFaucet)
 
-	faucet := service.NewFaucet()
-	a.Ss = append(a.Ss, faucet.S)
+	a.Faucet = service.NewFaucet()
+	a.AddS(a.Faucet.S)
 
-	return &Faucet{
-		A:      a,
-		Faucet: faucet,
-	}
+	return &a
 }

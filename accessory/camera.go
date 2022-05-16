@@ -16,6 +16,7 @@ type Camera struct {
 func NewCamera(info Info) *Camera {
 	a := Camera{}
 	a.A = New(info, TypeIPCamera)
+	
 	a.Control = service.NewCameraControl()
 	a.AddS(a.Control.S)
 
