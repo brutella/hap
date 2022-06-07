@@ -32,12 +32,12 @@ func (c *Bool) Value() bool {
 // If the function returns an error, the code -70402 is
 // included in the HTTP response.
 func (c *Bool) OnSetRemoteValue(fn func(v bool) error) {
-	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		if err := fn(v.(bool)); err != nil {
 			log.Debug.Println(err)
-			return -70402
+			return c.Val, -70402
 		}
-		return 0
+		return c.Val, 0
 	}
 }
 

@@ -181,19 +181,18 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 			continue
 		}
 
+		var value interface{}
+		var status int
 		if d.Value != nil {
-			s := c.SetValueRequest(d.Value, req)
-			if s != 0 {
-				cdata.Status = &s
-			}
+			value, status = c.SetValueRequest(d.Value, req)
 		}
 
-		if d.Response != nil {
-			if v, s := c.ValueRequest(req); s != 0 {
-				cdata.Status = &s
-			} else {
-				cdata.Value = v
-			}
+		if status != 0 {
+			cdata.Status = &status
+		}
+
+		if d.Response != nil && value != nil {
+			cdata.Value = value
 		}
 
 		if d.Events != nil {

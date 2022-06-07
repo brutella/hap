@@ -101,7 +101,7 @@ type C struct {
 	// If the communication fails, you can return a code != 0.
 	// In this case, the server responds with the HTTP status code 500 and the code
 	// in the response body (as defined in HAP-R2 6.7.1.4 HAP Status Codes).
-	SetValueRequestFunc func(value interface{}, request *http.Request) int
+	SetValueRequestFunc func(value interface{}, request *http.Request) (response interface{}, code int)
 
 	// A list of update value functions.
 	// There are called when the value of the characteristic is updated.
@@ -129,19 +129,19 @@ func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 
 // Sets the value of c to val and returns a status code.
 // The server invokes this function when the value is updated by an http request.
-func (c *C) SetValueRequest(val interface{}, req *http.Request) int {
+func (c *C) SetValueRequest(val interface{}, req *http.Request) (interface{}, int) {
 	// check write permission
 	if !c.IsWritable() {
 		log.Info.Printf("writing %v by %s not allowed\n", val, req.RemoteAddr)
-		return -70404
+		return val, -70404
 	}
 
 	return c.setValue(val, req)
 }
 
-func (c *C) setValue(v interface{}, req *http.Request) int {
+func (c *C) setValue(v interface{}, req *http.Request) (interface{}, int) {
 	newVal := c.convert(v)
-
+	response := newVal
 	// Value must be within min and max
 	switch c.Format {
 	case FormatFloat:
@@ -153,17 +153,19 @@ func (c *C) setValue(v interface{}, req *http.Request) int {
 	// ignore the same newVal
 	if c.Val == newVal && !c.updateOnSameValue {
 		// no error
-		return 0
+		return nil, 0
 	}
 
 	if !c.validVal(newVal) {
-		return -70410
+		return nil, -70410
 	}
 
 	if c.SetValueRequestFunc != nil && req != nil {
-		if s := c.SetValueRequestFunc(newVal, req); s != 0 {
-			return s
+		v, c := c.SetValueRequestFunc(newVal, req)
+		if c != 0 {
+			return v, c
 		}
+		response = v
 	}
 
 	// reference old value
@@ -177,7 +179,7 @@ func (c *C) setValue(v interface{}, req *http.Request) int {
 		fn(c, newVal, oldVal, req)
 	}
 
-	return 0
+	return response, 0
 }
 
 // ValueRequest returns the value of C and a status code.

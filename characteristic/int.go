@@ -19,7 +19,7 @@ func NewInt(t string) *Int {
 
 // SetValue sets a value
 func (c *Int) SetValue(v int) error {
-	code := c.setValue(v, nil)
+	_, code := c.setValue(v, nil)
 	switch code {
 	case -70410:
 		return fmt.Errorf("invalid value %d", v)
@@ -63,12 +63,12 @@ func (c *Int) StepValue() int {
 // If the function returns an error, the code -70402 is
 // included in the HTTP response.
 func (c *Int) OnSetRemoteValue(fn func(v int) error) {
-	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		if err := fn(v.(int)); err != nil {
 			log.Debug.Println(err)
-			return -70402
+			return c.Val, -70402
 		}
-		return 0
+		return c.Val, 0
 	}
 }
 

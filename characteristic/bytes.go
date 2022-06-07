@@ -37,13 +37,13 @@ func (c *Bytes) Value() []byte {
 // If the function returns an error, the code -70402 is
 // included in the HTTP response.
 func (c *Bytes) OnSetRemoteValue(fn func(v []byte) error) {
-	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		str, _ := base64.StdEncoding.DecodeString(v.(string))
 		if err := fn(str); err != nil {
 			log.Debug.Println(err)
-			return -70402
+			return c.Value(), -70402
 		}
-		return 0
+		return c.Value(), 0
 	}
 }
 

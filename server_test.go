@@ -87,13 +87,13 @@ func TestSetValueRequestSuccess(t *testing.T) {
 	setSession(req.RemoteAddr, &session{})
 
 	var setValueRequestFunc, onValueUpdateFunc bool
-	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		if is, want := v.(bool), true; is != want {
 			t.Fatalf("%v != %v", is, want)
 		}
 		setValueRequestFunc = true
 
-		return 0
+		return v, 0
 	}
 
 	a.Outlet.On.OnValueUpdate(func(new bool, old bool, r *http.Request) {
@@ -142,8 +142,8 @@ func TestSetValueRequestFailure(t *testing.T) {
 
 	setSession(req.RemoteAddr, &session{})
 
-	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
-		return JsonStatusResourceBusy
+	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
+		return nil, JsonStatusResourceBusy
 	}
 
 	s.ss.Handler.ServeHTTP(w, req)

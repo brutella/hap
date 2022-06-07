@@ -124,15 +124,15 @@ func TestSetValueRequestFunc(t *testing.T) {
 	c := NewBrightness()
 
 	c.SetValue(100)
-	c.SetValueRequestFunc = func(v interface{}, r *http.Request) int {
+	c.SetValueRequestFunc = func(v interface{}, r *http.Request) (response interface{}, status int) {
 		if r != nil {
-			return -70408
+			status = -70408
 		}
 
-		return 0
+		return
 	}
 
-	s := c.SetValueRequest(50, &http.Request{})
+	_, s := c.SetValueRequest(50, &http.Request{})
 	if is, want := s, -70408; is != want {
 		t.Fatalf("%v != %v", is, want)
 	}
