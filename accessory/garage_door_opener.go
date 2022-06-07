@@ -6,19 +6,16 @@ import (
 
 type GarageDoorOpener struct {
 	*A
-
 	GarageDoorOpener *service.GarageDoorOpener
 }
 
 // NewGarageDoorOpener returns a garage door opener accessory.
 func NewGarageDoorOpener(info Info) *GarageDoorOpener {
-	a := New(info, TypeGarageDoorOpener)
+	a := GarageDoorOpener{}
+	a.A = New(info, TypeGarageDoorOpener)
 
-	garage := service.NewGarageDoorOpener()
-	a.Ss = append(a.Ss, garage.S)
+	a.GarageDoorOpener = service.NewGarageDoorOpener()
+	a.AddS(a.GarageDoorOpener.S)
 
-	return &GarageDoorOpener{
-		A:                a,
-		GarageDoorOpener: garage,
-	}
+	return &a
 }

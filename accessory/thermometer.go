@@ -6,7 +6,6 @@ import (
 
 type Thermometer struct {
 	*A
-
 	TempSensor *service.TemperatureSensor
 }
 
@@ -14,8 +13,8 @@ type Thermometer struct {
 func NewTemperatureSensor(info Info) *Thermometer {
 	a := Thermometer{}
 	a.A = New(info, TypeThermostat)
-	a.TempSensor = service.NewTemperatureSensor()
 
+	a.TempSensor = service.NewTemperatureSensor()
 	a.AddS(a.TempSensor.S)
 
 	return &a

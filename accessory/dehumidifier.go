@@ -6,19 +6,16 @@ import (
 
 type Dehumidifier struct {
 	*A
-
 	Dehumidifier *service.Dehumidifier
 }
 
 // NewDehumidifier returns an outlet accessory.
 func NewDehumidifier(info Info) *Dehumidifier {
-	a := New(info, TypeDehumidifier)
+	a := Dehumidifier{}
+	a.A = New(info, TypeDehumidifier)
 
-	d := service.NewDehumidifier()
-	a.Ss = append(a.Ss, d.S)
+	a.Dehumidifier = service.NewDehumidifier()
+	a.AddS(a.Dehumidifier.S)
 
-	return &Dehumidifier{
-		A:            a,
-		Dehumidifier: d,
-	}
+	return &a
 }

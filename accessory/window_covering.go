@@ -13,6 +13,7 @@ type WindowCovering struct {
 func NewWindowCovering(info Info) *WindowCovering {
 	a := WindowCovering{}
 	a.A = New(info, TypeWindowCovering)
+
 	a.WindowCovering = service.NewWindowCovering()
 	a.AddS(a.WindowCovering.S)
 

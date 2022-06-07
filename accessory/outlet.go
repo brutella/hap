@@ -6,19 +6,16 @@ import (
 
 type Outlet struct {
 	*A
-
 	Outlet *service.Outlet
 }
 
 // NewOutlet returns an outlet accessory.
 func NewOutlet(info Info) *Outlet {
-	a := New(info, TypeOutlet)
+	a := Outlet{}
+	a.A = New(info, TypeOutlet)
 
-	outlet := service.NewOutlet()
-	a.Ss = append(a.Ss, outlet.S)
+	a.Outlet = service.NewOutlet()
+	a.AddS(a.Outlet.S)
 
-	return &Outlet{
-		A:      a,
-		Outlet: outlet,
-	}
+	return &a
 }

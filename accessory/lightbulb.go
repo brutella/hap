@@ -11,13 +11,11 @@ type Lightbulb struct {
 
 // NewLightbulb returns an light bulb accessory.
 func NewLightbulb(info Info) *Lightbulb {
-	a := New(info, TypeLightbulb)
+	a := Lightbulb{}
+	a.A = New(info, TypeLightbulb)
 
-	l := service.NewLightbulb()
-	a.AddS(l.S)
+	a.Lightbulb = service.NewLightbulb()
+	a.AddS(a.Lightbulb.S)
 
-	return &Lightbulb{
-		A:         a,
-		Lightbulb: l,
-	}
+	return &a
 }
