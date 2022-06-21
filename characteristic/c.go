@@ -165,7 +165,10 @@ func (c *C) setValue(v interface{}, req *http.Request) (interface{}, int) {
 		if c != 0 {
 			return v, c
 		}
-		response = v
+
+		if v != nil {
+			response = v
+		}
 	}
 
 	// reference old value

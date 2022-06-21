@@ -120,7 +120,7 @@ func TestReadOnly(t *testing.T) {
 	}
 }
 
-func TestSetValueRequestFunc(t *testing.T) {
+func TestSetValueRequestFuncError(t *testing.T) {
 	c := NewBrightness()
 
 	c.SetValue(100)
@@ -138,6 +138,24 @@ func TestSetValueRequestFunc(t *testing.T) {
 	}
 
 	if is, want := c.Value(), 100; is != want {
+		t.Fatalf("is=%v want=%v", is, want)
+	}
+}
+
+func TestOnSetRemoteValue(t *testing.T) {
+	c := NewBrightness()
+
+	c.SetValue(100)
+	c.OnSetRemoteValue(func(v int) error {
+		return nil
+	})
+
+	v, s := c.SetValueRequest(50, &http.Request{})
+	if is, want := s, 0; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+
+	if is, want := v, 50; is != want {
 		t.Fatalf("is=%v want=%v", is, want)
 	}
 }

@@ -41,9 +41,9 @@ func (c *Bytes) OnSetRemoteValue(fn func(v []byte) error) {
 		str, _ := base64.StdEncoding.DecodeString(v.(string))
 		if err := fn(str); err != nil {
 			log.Debug.Println(err)
-			return c.Value(), -70402
+			return nil, -70402
 		}
-		return c.Value(), 0
+		return nil, 0
 	}
 }
 

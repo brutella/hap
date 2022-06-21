@@ -35,9 +35,9 @@ func (c *String) OnSetRemoteValue(fn func(v string) error) {
 	c.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		if err := fn(v.(string)); err != nil {
 			log.Debug.Println(err)
-			return c.Val, -70402
+			return nil, -70402
 		}
-		return c.Val, 0
+		return nil, 0
 	}
 }
 
