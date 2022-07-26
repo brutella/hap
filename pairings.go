@@ -21,7 +21,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	ss, err := getSession(req.RemoteAddr)
+	ss, err := srv.getSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
@@ -126,7 +126,7 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 
 		// Close connection of deleted controller
 		for addr, conn := range conns() {
-			ss, err := getSession(addr)
+			ss, err := srv.getSession(addr)
 			if err != nil {
 				log.Debug.Println("no session for", addr, err)
 				continue

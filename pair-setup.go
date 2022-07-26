@@ -45,7 +45,7 @@ func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	}
 
 	// pair-setup can only be run by one controller simultaneously
-	for addr, _ := range sessions() {
+	for addr, _ := range srv.sessions() {
 		if addr != req.RemoteAddr {
 			log.Info.Printf("simulatenous pairings are not allowed")
 			tlv8Error(res, M2, TlvErrorBusy)
@@ -115,7 +115,7 @@ func (srv *Server) pairSetupM1(res http.ResponseWriter, req *http.Request, data 
 		tlv8Error(res, M2, TlvErrorUnknown)
 		return
 	}
-	setSession(req.RemoteAddr, ss)
+	srv.setSession(req.RemoteAddr, ss)
 
 	resp := pairSetupM2Payload{
 		Salt:      ss.Salt,
@@ -126,7 +126,7 @@ func (srv *Server) pairSetupM1(res http.ResponseWriter, req *http.Request, data 
 }
 
 func (srv *Server) pairSetupM3(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
-	ses, err := getPairSetupSession(req.RemoteAddr)
+	ses, err := srv.getPairSetupSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
@@ -162,7 +162,7 @@ func (srv *Server) pairSetupM3(res http.ResponseWriter, req *http.Request, data 
 }
 
 func (srv *Server) pairSetupM5(res http.ResponseWriter, req *http.Request, data pairSetupPayload) {
-	ses, err := getPairSetupSession(req.RemoteAddr)
+	ses, err := srv.getPairSetupSession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)

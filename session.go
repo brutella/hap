@@ -8,83 +8,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"net"
 	"net/http"
 	"sync"
 )
 
 var mux = &sync.Mutex{}
-var sess = make(map[string]interface{})
 var cons = make(map[string]*conn)
-
-func connStateEvent(conn net.Conn, event http.ConnState) {
-	if event == http.StateClosed {
-		addr := conn.RemoteAddr().String()
-		mux.Lock()
-		delete(sess, addr)
-		delete(cons, addr)
-		mux.Unlock()
-	}
-}
-
-func getSession(addr string) (*session, error) {
-	mux.Lock()
-	defer mux.Unlock()
-
-	if v, ok := sess[addr]; ok {
-		if s, ok := v.(*session); ok {
-			return s, nil
-		}
-		return nil, fmt.Errorf("unexpected session %T", v)
-	}
-
-	return nil, fmt.Errorf("no session for %s", addr)
-}
-
-func getPairVerifySession(addr string) (*pairVerifySession, error) {
-	mux.Lock()
-	defer mux.Unlock()
-
-	if v, ok := sess[addr]; ok {
-		if s, ok := v.(*pairVerifySession); ok {
-			return s, nil
-		}
-		return nil, fmt.Errorf("unexpected session %T", v)
-	}
-
-	return nil, fmt.Errorf("no session for %s", addr)
-}
-
-func getPairSetupSession(addr string) (*pairSetupSession, error) {
-	mux.Lock()
-	defer mux.Unlock()
-
-	if v, ok := sess[addr]; ok {
-		if s, ok := v.(*pairSetupSession); ok {
-			return s, nil
-		}
-		return nil, fmt.Errorf("unexpected session %T", v)
-	}
-
-	return nil, fmt.Errorf("no session for %s", addr)
-}
-
-func setSession(addr string, v interface{}) {
-	mux.Lock()
-	sess[addr] = v
-	mux.Unlock()
-}
-
-func sessions() map[string]interface{} {
-	copy := map[string]interface{}{}
-	mux.Lock()
-	for k, v := range sess {
-		copy[k] = v
-	}
-	mux.Unlock()
-
-	return copy
-}
 
 func setConn(addr string, conn *conn) {
 	mux.Lock()

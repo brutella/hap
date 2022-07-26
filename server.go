@@ -1,6 +1,8 @@
 package hap
 
 import (
+	"sync"
+
 	"github.com/brutella/dnssd"
 	"github.com/brutella/hap/accessory"
 	"github.com/brutella/hap/characteristic"
@@ -57,6 +59,10 @@ type Server struct {
 	// for dnssd stuff
 	responder dnssd.Responder
 	handle    dnssd.ServiceHandle
+
+	mux  *sync.Mutex
+	sess map[string]interface{}
+	cons map[string]*conn
 }
 
 // A ServeMux lets you attach handlers to http url paths.
@@ -81,13 +87,16 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 	}
 
 	s := &Server{
-		ss: &http.Server{
-			Handler:   r,
-			ConnState: connStateEvent,
-		},
-		st: st,
-		a:  a,
-		as: as,
+		st:   st,
+		a:    a,
+		as:   as,
+		mux:  &sync.Mutex{},
+		sess: make(map[string]interface{}),
+		cons: make(map[string]*conn),
+	}
+	s.ss = &http.Server{
+		Handler:   r,
+		ConnState: s.connStateEvent,
 	}
 
 	// Load the stored uuid or generate a new one.
@@ -148,7 +157,7 @@ func (s *Server) ServeMux() ServeMux {
 // IsAuthorized returns true if the provided
 // request is authorized to access accessory data.
 func (s *Server) IsAuthorized(request *http.Request) bool {
-	ss, _ := getSession(request.RemoteAddr)
+	ss, _ := s.getSession(request.RemoteAddr)
 	return ss != nil
 }
 
@@ -322,6 +331,75 @@ func (s *Server) prepare() error {
 	}
 
 	return nil
+}
+
+func (s *Server) connStateEvent(conn net.Conn, event http.ConnState) {
+	if event == http.StateClosed {
+		addr := conn.RemoteAddr().String()
+		s.mux.Lock()
+		delete(s.sess, addr)
+		delete(s.cons, addr)
+		s.mux.Unlock()
+	}
+}
+
+func (s *Server) getSession(addr string) (*session, error) {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	if v, ok := s.sess[addr]; ok {
+		if s, ok := v.(*session); ok {
+			return s, nil
+		}
+		return nil, fmt.Errorf("unexpected session %T", v)
+	}
+
+	return nil, fmt.Errorf("no session for %s", addr)
+}
+
+func (s *Server) getPairVerifySession(addr string) (*pairVerifySession, error) {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	if v, ok := s.sess[addr]; ok {
+		if s, ok := v.(*pairVerifySession); ok {
+			return s, nil
+		}
+		return nil, fmt.Errorf("unexpected session %T", v)
+	}
+
+	return nil, fmt.Errorf("no session for %s", addr)
+}
+
+func (s *Server) getPairSetupSession(addr string) (*pairSetupSession, error) {
+	s.mux.Lock()
+	defer s.mux.Unlock()
+
+	if v, ok := s.sess[addr]; ok {
+		if s, ok := v.(*pairSetupSession); ok {
+			return s, nil
+		}
+		return nil, fmt.Errorf("unexpected session %T", v)
+	}
+
+	return nil, fmt.Errorf("no session for %s", addr)
+}
+
+func (s *Server) setSession(addr string, v interface{}) {
+	s.mux.Lock()
+	s.sess[addr] = v
+	s.mux.Unlock()
+}
+
+func (s *Server) sessions() map[string]interface{} {
+	copy := map[string]interface{}{}
+	s.mux.Lock()
+	for k, v := range s.sess {
+		copy[k] = v
+	}
+	s.mux.Unlock()
+
+	return copy
 }
 
 func (s *Server) savePairing(p Pairing) error {

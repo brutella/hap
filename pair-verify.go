@@ -118,12 +118,12 @@ func (srv *Server) pairVerifyM1(res http.ResponseWriter, req *http.Request, data
 		SharedKey:      sharedKey,
 		EncryptionKey:  encKey,
 	}
-	setSession(req.RemoteAddr, ses)
+	srv.setSession(req.RemoteAddr, ses)
 }
 
 func (srv *Server) pairVerifyM3(res http.ResponseWriter, req *http.Request, data pairVerifyPayload) {
 	// Get the session for the request.
-	ses, err := getPairVerifySession(req.RemoteAddr)
+	ses, err := srv.getPairVerifySession(req.RemoteAddr)
 	if err != nil {
 		log.Info.Println(err)
 		res.WriteHeader(http.StatusInternalServerError)
@@ -182,7 +182,7 @@ func (srv *Server) pairVerifyM3(res http.ResponseWriter, req *http.Request, data
 	}
 
 	// Store the session for the request.
-	setSession(req.RemoteAddr, ss)
+	srv.setSession(req.RemoteAddr, ss)
 
 	conn := getConn(req)
 	if conn == nil {

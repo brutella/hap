@@ -50,7 +50,7 @@ func TestIdentify(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPost, "/identify", nil)
 	w := httptest.NewRecorder()
 
-	setSession(req.RemoteAddr, &session{})
+	s.setSession(req.RemoteAddr, &session{})
 
 	var identified bool
 	a.IdentifyFunc = func(r *http.Request) {
@@ -84,7 +84,7 @@ func TestSetValueRequestSuccess(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPut, "/characteristics", bytes.NewBuffer([]byte(body)))
 	w := httptest.NewRecorder()
 
-	setSession(req.RemoteAddr, &session{})
+	s.setSession(req.RemoteAddr, &session{})
 
 	var setValueRequestFunc, onValueUpdateFunc bool
 	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
@@ -140,7 +140,7 @@ func TestSetValueRequestFailure(t *testing.T) {
 	req := httptest.NewRequest(http.MethodPut, "/characteristics", bytes.NewBuffer([]byte(body)))
 	w := httptest.NewRecorder()
 
-	setSession(req.RemoteAddr, &session{})
+	s.setSession(req.RemoteAddr, &session{})
 
 	a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
 		return nil, JsonStatusResourceBusy
@@ -181,7 +181,7 @@ func TestGetProgrammableSwitchEvent(t *testing.T) {
 	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/characteristics?id=%d.%d", a.Id, c.Id), nil)
 	w := httptest.NewRecorder()
 
-	setSession(req.RemoteAddr, &session{})
+	srv.setSession(req.RemoteAddr, &session{})
 	srv.ss.Handler.ServeHTTP(w, req)
 
 	r := w.Result()
