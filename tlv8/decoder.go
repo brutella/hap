@@ -60,13 +60,14 @@ func (d *decoder) decode(v interface{}) error {
 		if tlv8, ok := eType.Field(i).Tag.Lookup("tlv8"); ok {
 			values := strings.Split(tlv8, ",")
 			tag := uint8(to.Uint64(values[0]))
+			optional := len(values) > 1 && values[1] == "optional"
 
 			field := eValue.Field(i)
 			switch value := field.Interface().(type) {
 			case uint8:
 				if v, err := d.r.readByte(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -74,7 +75,7 @@ func (d *decoder) decode(v interface{}) error {
 			case uint16:
 				if v, err := d.r.readUint16(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -83,7 +84,7 @@ func (d *decoder) decode(v interface{}) error {
 			case int16:
 				if v, err := d.r.readint16(tag); err == nil {
 					field.SetInt(int64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -92,7 +93,7 @@ func (d *decoder) decode(v interface{}) error {
 			case uint32:
 				if v, err := d.r.readUint32(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -101,7 +102,7 @@ func (d *decoder) decode(v interface{}) error {
 			case int32:
 				if v, err := d.r.readint32(tag); err == nil {
 					field.SetInt(int64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -110,7 +111,7 @@ func (d *decoder) decode(v interface{}) error {
 			case int64:
 				if v, err := d.r.readint64(tag); err == nil {
 					field.SetInt(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -119,7 +120,7 @@ func (d *decoder) decode(v interface{}) error {
 			case uint64:
 				if v, err := d.r.readUint64(tag); err == nil {
 					field.SetUint(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -128,7 +129,7 @@ func (d *decoder) decode(v interface{}) error {
 			case float32:
 				if v, err := d.r.readFloat32(tag); err == nil {
 					field.SetFloat(float64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -137,7 +138,7 @@ func (d *decoder) decode(v interface{}) error {
 			case []byte:
 				if v, err := d.r.readBytes(tag); err == nil {
 					field.SetBytes(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -146,7 +147,7 @@ func (d *decoder) decode(v interface{}) error {
 			case string:
 				if v, err := d.r.readString(tag); err == nil {
 					field.SetString(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -154,7 +155,7 @@ func (d *decoder) decode(v interface{}) error {
 			case bool:
 				if v, err := d.r.readBool(tag); err == nil {
 					field.SetBool(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
 					return err
@@ -173,7 +174,7 @@ func (d *decoder) decode(v interface{}) error {
 						if tlv8 == "-" {
 							// unnamed slices are inline encoded
 							err = d.decode(v)
-							if isEmptyStruct(v) {
+							if err == io.EOF {
 								// step out of loop
 								break
 							}
