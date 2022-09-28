@@ -2,8 +2,9 @@ package tlv8
 
 import (
 	"bytes"
-	"github.com/xiam/to"
 	"reflect"
+
+	"github.com/xiam/to"
 )
 
 type encoder struct {

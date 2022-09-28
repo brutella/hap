@@ -1,6 +1,8 @@
 package tlv8
 
 import (
+	"fmt"
+
 	"github.com/xiam/to"
 
 	"bytes"
@@ -8,6 +10,14 @@ import (
 	"reflect"
 	"strings"
 )
+
+type EOF struct {
+	field reflect.StructField
+}
+
+func (e *EOF) Error() string {
+	return fmt.Sprintf("not enough bytes for non-optional field %s", e.field.Name)
+}
 
 type decoder struct {
 	r *reader
@@ -57,7 +67,8 @@ func (d *decoder) decode(v interface{}) error {
 	}
 
 	for i := 0; i < eValue.NumField(); i++ {
-		if tlv8, ok := eType.Field(i).Tag.Lookup("tlv8"); ok {
+		typeField := eType.Field(i)
+		if tlv8, ok := typeField.Tag.Lookup("tlv8"); ok {
 			values := strings.Split(tlv8, ",")
 			tag := uint8(to.Uint64(values[0]))
 			optional := len(values) > 1 && values[1] == "optional"
@@ -70,7 +81,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 			case uint16:
 				if v, err := d.r.readUint16(tag); err == nil {
@@ -78,7 +89,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int16:
@@ -87,7 +98,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case uint32:
@@ -96,7 +107,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int32:
@@ -105,7 +116,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int64:
@@ -114,7 +125,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case uint64:
@@ -123,7 +134,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case float32:
@@ -132,7 +143,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case []byte:
@@ -141,7 +152,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case string:
@@ -150,7 +161,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 			case bool:
 				if v, err := d.r.readBool(tag); err == nil {
@@ -158,7 +169,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			default:
