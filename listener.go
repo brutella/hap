@@ -14,7 +14,7 @@ func (ln *listener) Accept() (con net.Conn, err error) {
 		return
 	}
 
-	conn := &conn{Conn: con}
+	conn := newConn(con)
 	setConn(conn.RemoteAddr().String(), conn)
 
 	return conn, err
