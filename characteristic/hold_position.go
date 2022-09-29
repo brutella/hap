@@ -13,5 +13,7 @@ func NewHoldPosition() *HoldPosition {
 	c.Format = FormatBool
 	c.Permissions = []string{PermissionWrite}
 
+	c.updateOnSameValue = true
+
 	return &HoldPosition{c}
 }
