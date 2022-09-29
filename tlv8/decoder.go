@@ -1,6 +1,8 @@
 package tlv8
 
 import (
+	"fmt"
+
 	"github.com/xiam/to"
 
 	"bytes"
@@ -8,6 +10,14 @@ import (
 	"reflect"
 	"strings"
 )
+
+type EOF struct {
+	field reflect.StructField
+}
+
+func (e *EOF) Error() string {
+	return fmt.Sprintf("not enough bytes for non-optional field %s", e.field.Name)
+}
 
 type decoder struct {
 	r *reader
@@ -57,107 +67,109 @@ func (d *decoder) decode(v interface{}) error {
 	}
 
 	for i := 0; i < eValue.NumField(); i++ {
-		if tlv8, ok := eType.Field(i).Tag.Lookup("tlv8"); ok {
+		typeField := eType.Field(i)
+		if tlv8, ok := typeField.Tag.Lookup("tlv8"); ok {
 			values := strings.Split(tlv8, ",")
 			tag := uint8(to.Uint64(values[0]))
+			optional := len(values) > 1 && values[1] == "optional"
 
 			field := eValue.Field(i)
 			switch value := field.Interface().(type) {
 			case uint8:
 				if v, err := d.r.readByte(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 			case uint16:
 				if v, err := d.r.readUint16(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int16:
 				if v, err := d.r.readint16(tag); err == nil {
 					field.SetInt(int64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case uint32:
 				if v, err := d.r.readUint32(tag); err == nil {
 					field.SetUint(uint64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int32:
 				if v, err := d.r.readint32(tag); err == nil {
 					field.SetInt(int64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case int64:
 				if v, err := d.r.readint64(tag); err == nil {
 					field.SetInt(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case uint64:
 				if v, err := d.r.readUint64(tag); err == nil {
 					field.SetUint(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case float32:
 				if v, err := d.r.readFloat32(tag); err == nil {
 					field.SetFloat(float64(v))
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case []byte:
 				if v, err := d.r.readBytes(tag); err == nil {
 					field.SetBytes(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			case string:
 				if v, err := d.r.readString(tag); err == nil {
 					field.SetString(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 			case bool:
 				if v, err := d.r.readBool(tag); err == nil {
 					field.SetBool(v)
-				} else if err == io.EOF {
+				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return err
+					return &EOF{typeField}
 				}
 
 			default:
@@ -173,7 +185,7 @@ func (d *decoder) decode(v interface{}) error {
 						if tlv8 == "-" {
 							// unnamed slices are inline encoded
 							err = d.decode(v)
-							if isEmptyStruct(v) {
+							if err == io.EOF {
 								// step out of loop
 								break
 							}
