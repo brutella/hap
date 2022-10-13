@@ -1,8 +1,6 @@
 package tlv8
 
 import (
-	"fmt"
-
 	"github.com/xiam/to"
 
 	"bytes"
@@ -10,14 +8,6 @@ import (
 	"reflect"
 	"strings"
 )
-
-type EOF struct {
-	field reflect.StructField
-}
-
-func (e *EOF) Error() string {
-	return fmt.Sprintf("not enough bytes for non-optional field %s", e.field.Name)
-}
 
 type decoder struct {
 	r *reader
