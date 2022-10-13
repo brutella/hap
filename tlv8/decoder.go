@@ -81,7 +81,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 			case uint16:
 				if v, err := d.r.readUint16(tag); err == nil {
@@ -89,7 +89,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case int16:
@@ -98,7 +98,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case uint32:
@@ -107,7 +107,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case int32:
@@ -116,7 +116,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case int64:
@@ -125,7 +125,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case uint64:
@@ -134,7 +134,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case float32:
@@ -143,7 +143,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case []byte:
@@ -152,7 +152,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			case string:
@@ -161,7 +161,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 			case bool:
 				if v, err := d.r.readBool(tag); err == nil {
@@ -169,7 +169,7 @@ func (d *decoder) decode(v interface{}) error {
 				} else if err == io.EOF && optional {
 					continue
 				} else {
-					return &EOF{typeField}
+					return err
 				}
 
 			default:
