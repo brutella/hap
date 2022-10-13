@@ -10,7 +10,7 @@ type AccessoryRuntimeInformation struct {
 	Ping *characteristic.Ping
 }
 
-func NewAccessoryInformation() *AccessoryRuntimeInformation {
+func NewAccessoryRuntimeInformation() *AccessoryRuntimeInformation {
 	s := AccessoryRuntimeInformation{}
 	s.S = New(TypeAccessoryRuntimeInformation)
 
