@@ -1,6 +1,8 @@
 package hap
 
 import (
+	"sync"
+
 	"github.com/brutella/hap/log"
 
 	"bufio"
@@ -20,14 +22,24 @@ type conn struct {
 	// 2022-02-17 (mah) This workaround is needed because switching to encryption is done
 	// after sending a response. But Write() on http.ResponseWriter is not immediate.
 	// So therefore we wait until the next read.
-	s  *session
-	ss *session
+	s   *session
+	smu sync.Mutex
+	ss  *session
 
 	readBuf io.Reader
 }
 
+func newConn(c net.Conn) *conn {
+	return &conn{
+		Conn: c,
+		smu:  sync.Mutex{},
+	}
+}
+
 func (c *conn) Upgrade(s *session) {
+	c.smu.Lock()
 	c.s = s
+	c.smu.Unlock()
 }
 
 // Write writes bytes to the connection.
@@ -60,10 +72,12 @@ const (
 // Read reads bytes from the connection.
 // The read bytes are decrypted when possible.
 func (c *conn) Read(b []byte) (int, error) {
+	c.smu.Lock()
 	if c.s != nil {
 		c.ss = c.s
 		c.s = nil
 	}
+	c.smu.Unlock()
 
 	if c.ss == nil {
 		return c.Conn.Read(b)
