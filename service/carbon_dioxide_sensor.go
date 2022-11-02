@@ -11,6 +11,7 @@ type CarbonDioxideSensor struct {
 	*S
 
 	CarbonDioxideDetected *characteristic.CarbonDioxideDetected
+	CarbonDioxideLevel    *characteristic.CarbonDioxideLevel
 }
 
 func NewCarbonDioxideSensor() *CarbonDioxideSensor {
@@ -19,6 +20,9 @@ func NewCarbonDioxideSensor() *CarbonDioxideSensor {
 
 	s.CarbonDioxideDetected = characteristic.NewCarbonDioxideDetected()
 	s.AddC(s.CarbonDioxideDetected.C)
+
+	s.CarbonDioxideLevel = characteristic.NewCarbonDioxideLevel()
+	s.AddC(s.CarbonDioxideLevel.C)
 
 	return &s
 }
