@@ -23,6 +23,5 @@ func NewCarbonDioxideSensor() *CarbonDioxideSensor {
 
 	s.CarbonDioxideLevel = characteristic.NewCarbonDioxideLevel()
 	s.AddC(s.CarbonDioxideLevel.C)
-
 	return &s
 }

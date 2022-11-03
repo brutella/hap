@@ -20,20 +20,20 @@ const (
 )
 
 type pairSetupPayload struct {
-	Method        byte   `tlv8:"0,optional"`
-	Identifier    string `tlv8:"1,optional"`
-	Salt          []byte `tlv8:"2,optional"`
-	PublicKey     []byte `tlv8:"3,optional"`
-	Proof         []byte `tlv8:"4,optional"`
-	EncryptedData []byte `tlv8:"5,optional"`
-	State         byte   `tlv8:"6,optional"`
-	Error         byte   `tlv8:"7,optional"`
-	RetryDelay    byte   `tlv8:"8,optional"`
-	Certificate   []byte `tlv8:"9,optional"`
-	Signature     []byte `tlv8:"10,optional"`
-	Permissions   byte   `tlv8:"11,optional"`
-	FragmentData  []byte `tlv8:"13,optional"`
-	FragmentLast  []byte `tlv8:"14,optional"`
+	Method        byte   `tlv8:"0"`
+	Identifier    string `tlv8:"1"`
+	Salt          []byte `tlv8:"2"`
+	PublicKey     []byte `tlv8:"3"`
+	Proof         []byte `tlv8:"4"`
+	EncryptedData []byte `tlv8:"5"`
+	State         byte   `tlv8:"6"`
+	Error         byte   `tlv8:"7"`
+	RetryDelay    byte   `tlv8:"8"`
+	Certificate   []byte `tlv8:"9"`
+	Signature     []byte `tlv8:"10"`
+	Permissions   byte   `tlv8:"11"`
+	FragmentData  []byte `tlv8:"13"`
+	FragmentLast  []byte `tlv8:"14"`
 }
 
 func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {

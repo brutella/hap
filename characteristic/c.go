@@ -17,13 +17,12 @@ const (
 )
 
 const (
-	UnitPercentage              = "percentage" // %
-	UnitArcDegrees              = "arcdegrees" // °
-	UnitCelsius                 = "celsius"    // °C
-	UnitLux                     = "lux"        // lux
-	UnitSeconds                 = "seconds"    // sec
-	UnitPPM                     = "ppm"        // ppm
-	UnitMicrogramsPerCubicMeter = "micrograms/m^3"
+	UnitPercentage = "percentage" // %
+	UnitArcDegrees = "arcdegrees" // °
+	UnitCelsius    = "celsius"    // °C
+	UnitLux        = "lux"        // lux
+	UnitSeconds    = "seconds"    // sec
+	UnitPPM        = "ppm"        // ppm
 )
 
 const (
