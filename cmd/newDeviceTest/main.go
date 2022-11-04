@@ -3,6 +3,8 @@
 package main
 
 import (
+	"strconv"
+
 	"github.com/brutella/hap"
 	"github.com/brutella/hap/accessory"
 
@@ -19,79 +21,131 @@ func main() {
 		Name: "Bridge",
 	})
 
-	a := accessory.NewColorTemperatureLightbulb(accessory.Info{
-		Name: "ColorTemperatureLightbulb",
-	})
+	// a := accessory.NewColorTemperatureLightbulb(accessory.Info{
+	// 	Name: "ColorTemperatureLightbulb",
+	// })
 
-	b := accessory.NewThermostat(accessory.Info{
-		Name: "Thermostat",
-	})
+	// b := accessory.NewThermostat(accessory.Info{
+	// 	Name: "Thermostat",
+	// })
 
 	e := accessory.NewHeater(accessory.Info{
 		Name: "Heater",
 	})
 
-	f := accessory.NewAirPurifier(accessory.Info{
-		Name: "AirPurifier",
+	e.Heater.CurrentHeaterCoolerState.OnSetRemoteValue(func(v int) error {
+		log.Println("CurrentHeaterCoolerState:" + strconv.Itoa(v))
+		return nil
 	})
 
-	h := accessory.NewWindowCovering(accessory.Info{
-		Name: "WindowCovering",
+	e.Heater.CurrentTemperature.OnSetRemoteValue(func(v float64) error {
+		log.Println("CurrentTemperature:" + strconv.Itoa(int(v)))
+		return nil
 	})
 
-	a1 := accessory.NewTemperatureSensor(accessory.Info{
-		Name: "TemperatureSensor",
+	e.Heater.HeatingThresholdTemperature.OnSetRemoteValue(func(v float64) error {
+		log.Println("HeatingThresholdTemperature:" + strconv.Itoa(int(v)))
+		return nil
 	})
 
-	a2 := accessory.NewHumidifier(accessory.Info{
-		Name: "Humidifier",
+	e.Heater.TargetHeaterCoolerState.OnSetRemoteValue(func(v int) error {
+		log.Println("TargetHeaterCoolerState:" + strconv.Itoa(v))
+		return nil
 	})
 
-	a1.TempSensor.CurrentTemperature.SetValue(30.5)
-
-	a3 := accessory.NewHumiditySensor(accessory.Info{
-		Name: "HumiditySensor",
+	e.Heater.Active.OnSetRemoteValue(func(v int) error {
+		log.Println("Active:" + strconv.Itoa(v))
+		return nil
 	})
 
-	a3.HumiditySensor.CurrentRelativeHumidity.SetValue(27.5)
+	// f := accessory.NewAirPurifier(accessory.Info{
+	// 	Name: "AirPurifier",
+	// })
 
-	a4 := accessory.NewLightSensor(accessory.Info{
-		Name: "Light Sensor",
+	// h := accessory.NewWindowCovering(accessory.Info{
+	// 	Name: "WindowCovering",
+	// })
+
+	// a1 := accessory.NewTemperatureSensor(accessory.Info{
+	// 	Name: "TemperatureSensor",
+	// })
+
+	// a2 := accessory.NewHumidifier(accessory.Info{
+	// 	Name: "Humidifier",
+	// })
+
+	// a1.TempSensor.CurrentTemperature.SetValue(30.5)
+
+	// a3 := accessory.NewHumiditySensor(accessory.Info{
+	// 	Name: "HumiditySensor",
+	// })
+
+	// a3.HumiditySensor.CurrentRelativeHumidity.SetValue(27.5)
+
+	// a4 := accessory.NewLightSensor(accessory.Info{
+	// 	Name: "Light Sensor",
+	// })
+
+	// a4.LightSensor.CurrentAmbientLightLevel.SetValue(200)
+
+	// a5 := accessory.NewAirQualitySensor(accessory.Info{
+	// 	Name: "AirQualitySensor",
+	// })
+	// a5.AirQualitySensor.AirQuality.SetValue(2)
+
+	// a6 := accessory.NewCarbonDioxideSensor(accessory.Info{
+	// 	Name: "CarbonDioxideSensor",
+	// })
+
+	// a6.CarbonDioxideSensor.CarbonDioxideDetected.SetValue(1)
+	// a6.CarbonDioxideSensor.CarbonDioxideLevel.SetValue(300)
+
+	// a7 := accessory.NewMotionSensor(accessory.Info{
+	// 	Name: "MotionSensor",
+	// })
+
+	// a7.MotionSensor.MotionDetected.SetValue(true)
+
+	// a8 := accessory.NewContactSensor(accessory.Info{
+	// 	Name: "ContactSensor",
+	// })
+
+	// a8.ContactSensor.ContactSensorState.SetValue(1)
+
+	// a9 := accessory.NewOccupancySensor(accessory.Info{
+	// 	Name: "OccupancySensor",
+	// })
+
+	// a9.OccupancySensor.OccupancyDetected.SetValue(1)
+
+	a10 := accessory.NewHeater_New(accessory.Info{
+		Name: "Heater New",
 	})
 
-	a4.LightSensor.CurrentAmbientLightLevel.SetValue(200)
-
-	a5 := accessory.NewAirQualitySensor(accessory.Info{
-		Name: "AirQualitySensor",
-	})
-	a5.AirQualitySensor.AirQuality.SetValue(2)
-
-	a6 := accessory.NewCarbonDioxideSensor(accessory.Info{
-		Name: "CarbonDioxideSensor",
+	a10.Heater.Active.OnSetRemoteValue(func(v int) error {
+		log.Println("Active:" + strconv.Itoa(v))
+		return nil
 	})
 
-	a6.CarbonDioxideSensor.CarbonDioxideDetected.SetValue(1)
-	a6.CarbonDioxideSensor.CarbonDioxideLevel.SetValue(300)
-
-	a7 := accessory.NewMotionSensor(accessory.Info{
-		Name: "MotionSensor",
+	a10.Heater.CurrentHeaterCoolerState.OnSetRemoteValue(func(v int) error {
+		log.Println("CurrentHeaterCoolerState:" + strconv.Itoa(v))
+		return nil
 	})
 
-	a7.MotionSensor.MotionDetected.SetValue(true)
-
-	a8 := accessory.NewContactSensor(accessory.Info{
-		Name: "ContactSensor",
+	a10.Heater.CurrentTemperature.OnSetRemoteValue(func(v float64) error {
+		log.Println("CurrentTemperature:" + strconv.Itoa(int(v)))
+		return nil
 	})
 
-	a8.ContactSensor.ContactSensorState.SetValue(1)
-
-	a9 := accessory.NewOccupancySensor(accessory.Info{
-		Name: "OccupancySensor",
+	a10.Heater.HeatingThresholdTemperature.OnSetRemoteValue(func(v float64) error {
+		log.Println("HeatingThresholdTemperature:" + strconv.Itoa(int(v)))
+		return nil
 	})
 
-	a9.OccupancySensor.OccupancyDetected.SetValue(1)
+	a10.Heater.CurrentTemperature.SetValue(10)
 
-	s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, a.A, b.A, e.A, f.A, h.A, a1.A, a2.A, a3.A, a4.A, a5.A, a6.A, a7.A, a8.A, a9.A)
+	//s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, a.A, b.A, e.A, f.A, h.A, a1.A, a2.A, a3.A, a4.A, a5.A, a6.A, a7.A, a8.A, a9.A)
+	s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, e.A, a10.A)
 	if err != nil {
 		log.Panic(err)
 	}
