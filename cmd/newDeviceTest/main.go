@@ -66,9 +66,11 @@ func main() {
 	// 	Name: "WindowCovering",
 	// })
 
-	// a1 := accessory.NewTemperatureSensor(accessory.Info{
-	// 	Name: "TemperatureSensor",
-	// })
+	a1 := accessory.NewTemperatureSensor(accessory.Info{
+		Name: "TemperatureSensor",
+	})
+
+	a1.TempSensor.CurrentTemperature.SetValue(83)
 
 	// a2 := accessory.NewHumidifier(accessory.Info{
 	// 	Name: "Humidifier",
@@ -144,8 +146,44 @@ func main() {
 
 	a10.Heater.CurrentTemperature.SetValue(10)
 
+	a11 := accessory.NewAirPurifier(accessory.Info{
+		Name: "AirPurifier",
+	})
+
+	a11.AirPurifier.Active.SetValue(1)
+	a11.AirPurifier.CurrentAirPurifierState.OnSetRemoteValue(func(v int) error {
+		log.Println("CurrentAirPurifierState:" + strconv.Itoa(v))
+		return nil
+	})
+
+	a11.AirPurifier.TargetAirPurifierState.OnSetRemoteValue(func(v int) error {
+		log.Println("TargetAirPurifierState:" + strconv.Itoa(int(v)))
+		return nil
+	})
+
+	a12 := accessory.NewVentilationSystem(accessory.Info{
+		Name: "Ventilation System",
+	})
+
+	a12.VentilationSystem.Active.SetValue(1)
+	a12.VentilationSystem.CarbonDioxideLevel.SetValue(23)
+	a12.VentilationSystem.CurrentAirPurifierState.SetValue(1)
+	a12.VentilationSystem.CurrentRelativeHumidity.SetValue(43)
+	a12.VentilationSystem.CurrentTemperature.SetValue(24)
+	a12.VentilationSystem.PM2_5Density.SetValue(45)
+
+	a12.VentilationSystem.TargetAirPurifierState.OnSetRemoteValue(func(v int) error {
+		log.Println("TargetAirPurifierState:" + strconv.Itoa(int(v)))
+		return nil
+	})
+
+	a12.VentilationSystem.Active.OnSetRemoteValue(func(v int) error {
+		log.Println("Active:" + strconv.Itoa(int(v)))
+		return nil
+	})
+
 	//s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, a.A, b.A, e.A, f.A, h.A, a1.A, a2.A, a3.A, a4.A, a5.A, a6.A, a7.A, a8.A, a9.A)
-	s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, e.A, a10.A)
+	s, err := hap.NewServer(hap.NewFsStore("./db"), d.A, a12.A, a1.A)
 	if err != nil {
 		log.Panic(err)
 	}
