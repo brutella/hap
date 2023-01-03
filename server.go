@@ -40,6 +40,10 @@ type Server struct {
 	// If empty, a random port is used.
 	Addr string
 
+	// Ifaces specifies at which interface the
+	// associated dnssd service is announced.
+	Ifaces []string
+
 	MfiCompliant bool   // default false
 	Protocol     string // default "1.0"
 	SetupId      string
@@ -480,6 +484,7 @@ func (s *Server) service() (dnssd.Service, error) {
 		Host:   strings.Replace(s.uuid, ":", "", -1), // use the id (without the colons) to get unique hostnames
 		Text:   s.txtRecords(),
 		Port:   s.port,
+		Ifaces: s.Ifaces,
 	}
 
 	return dnssd.NewService(cfg)
