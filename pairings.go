@@ -114,14 +114,14 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		}
 		tlv8OK(res, resp)
 
-		// Close all connections if no
-		// admin controller is paired anymore
+		// If no admin controller is paired anymore,
+		// close all connections and delete all pairings
 		if !srv.pairedWithAdmin() {
 			for addr, conn := range conns() {
 				log.Debug.Println("Closing connection to", addr)
 				conn.Close()
 			}
-			return
+			srv.deleteAllPairings()
 		}
 
 		// Close connection of deleted controller

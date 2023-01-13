@@ -426,6 +426,13 @@ func (s *Server) deletePairing(p Pairing) error {
 	return nil
 }
 
+func (s *Server) deleteAllPairings() {
+	for _, p := range s.st.Pairings() {
+		s.st.DeletePairing(p.Name)
+	}
+	s.updateTxtRecords()
+}
+
 func (s *Server) isPaired() bool {
 	return len(s.st.Pairings()) > 0
 }
