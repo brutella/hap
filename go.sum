@@ -1,7 +1,5 @@
-github.com/brutella/dnssd v1.2.5-0.20230109163300-e7119f1ad274 h1:i4v5YgQXfkg06lVkvANYUCBI2HcnOXuQ730dtguaqvk=
-github.com/brutella/dnssd v1.2.5-0.20230109163300-e7119f1ad274/go.mod h1:JoW2sJUrmVIef25G6lrLj7HS6Xdwh6q8WUIvMkkBYXs=
-github.com/brutella/dnssd v1.2.5-0.20230110092719-0593ced73aa1 h1:akgPIHTKYDnvSfU+tFA5gJhXd+YpVemb8pQNZeny6DA=
-github.com/brutella/dnssd v1.2.5-0.20230110092719-0593ced73aa1/go.mod h1:JoW2sJUrmVIef25G6lrLj7HS6Xdwh6q8WUIvMkkBYXs=
+github.com/brutella/dnssd v1.2.5 h1:b8syhho41/5ikw3X2X4baR9NWEBSlpZnfQgujsv7bk4=
+github.com/brutella/dnssd v1.2.5/go.mod h1:JoW2sJUrmVIef25G6lrLj7HS6Xdwh6q8WUIvMkkBYXs=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-chi/chi v1.5.4 h1:QHdzF2szwjqVV4wmByUnTcsbIg7UGaQ0tPF2t5GcAIs=
