@@ -38,7 +38,7 @@ type pairSetupPayload struct {
 
 func (srv *Server) pairSetup(res http.ResponseWriter, req *http.Request) {
 	// pairing is only allowed if the accessory is not paired yet
-	if srv.isPaired() {
+	if srv.IsPaired() {
 		log.Info.Println("pairing is not allowed")
 		tlv8Error(res, M2, TlvErrorUnavailable)
 		return

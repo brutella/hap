@@ -165,6 +165,11 @@ func (s *Server) IsAuthorized(request *http.Request) bool {
 	return ss != nil
 }
 
+// IsPaired returns true if the server is paired with a client (iOS).
+func (s *Server) IsPaired() bool {
+	return len(s.st.Pairings()) > 0
+}
+
 // ListenAndServe starts the server.
 func (s *Server) ListenAndServe(ctx context.Context) error {
 	err := s.prepare()
@@ -433,10 +438,6 @@ func (s *Server) deleteAllPairings() {
 	s.updateTxtRecords()
 }
 
-func (s *Server) isPaired() bool {
-	return len(s.st.Pairings()) > 0
-}
-
 func (s *Server) pairedWithAdmin() bool {
 	for _, p := range s.st.Pairings() {
 		if p.Permission == PermissionAdmin {
@@ -453,7 +454,7 @@ func (s *Server) txtRecords() map[string]string {
 		"id": s.uuid,
 		"c#": fmt.Sprintf("%d", s.version),
 		"s#": "1",
-		"sf": fmt.Sprintf("%d", to.Int64(!s.isPaired())),
+		"sf": fmt.Sprintf("%d", to.Int64(!s.IsPaired())),
 		"ff": fmt.Sprintf("%d", to.Int64(s.MfiCompliant)),
 		"md": s.a.Name(),
 		"ci": fmt.Sprintf("%d", s.a.Type),
