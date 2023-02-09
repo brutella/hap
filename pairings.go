@@ -32,8 +32,8 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 	d := struct {
 		Method     byte   `tlv8:"0"`
 		Identifier string `tlv8:"1"`
-		PublicKey  []byte `tlv8:"3"`
-		Permission byte   `tlv8:"11"`
+		PublicKey  []byte `tlv8:"3,optional"`
+		Permission byte   `tlv8:"11,optional"`
 		State      byte   `tlv8:"6"`
 	}{}
 
