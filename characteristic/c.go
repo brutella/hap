@@ -202,11 +202,13 @@ func (c *C) ValueRequest(req *http.Request) (interface{}, int) {
 	return c.value(), 0
 }
 
-// value returns the value of C and a status code.
+// value returns the value of C
 func (c *C) value() interface{} {
 	return c.Val
 }
 
+// IsWritable returns true if clients are allowed
+// to update the value of the characteristic.
 func (c *C) IsWritable() bool {
 	for _, p := range c.Permissions {
 		if p == PermissionWrite {
@@ -217,6 +219,8 @@ func (c *C) IsWritable() bool {
 	return false
 }
 
+// IsReadable returns true if clients are allowed
+// to read the value of the characteristic.
 func (c *C) IsReadable() bool {
 	for _, p := range c.Permissions {
 		if p == PermissionRead {
@@ -227,6 +231,8 @@ func (c *C) IsReadable() bool {
 	return false
 }
 
+// IsObservable returns true if clients are allowed
+// to observe the value of the characteristic.
 func (c *C) IsObservable() bool {
 	for _, p := range c.Permissions {
 		if p == PermissionEvents {
@@ -237,6 +243,8 @@ func (c *C) IsObservable() bool {
 	return false
 }
 
+// IsObservable returns true if the value of the
+// characteristic can only be updated, but not read.
 func (c *C) IsWriteOnly() bool {
 	return len(c.Permissions) == 1 && c.Permissions[0] == PermissionWrite
 }

@@ -40,6 +40,10 @@ type Server struct {
 	// If empty, a random port is used.
 	Addr string
 
+	// Ifaces specifies at which interface the
+	// associated dnssd service is announced.
+	Ifaces []string
+
 	MfiCompliant bool   // default false
 	Protocol     string // default "1.0"
 	SetupId      string
@@ -159,6 +163,11 @@ func (s *Server) ServeMux() ServeMux {
 func (s *Server) IsAuthorized(request *http.Request) bool {
 	ss, _ := s.getSession(request.RemoteAddr)
 	return ss != nil
+}
+
+// IsPaired returns true if the server is paired with a client (iOS).
+func (s *Server) IsPaired() bool {
+	return len(s.st.Pairings()) > 0
 }
 
 // ListenAndServe starts the server.
@@ -422,8 +431,11 @@ func (s *Server) deletePairing(p Pairing) error {
 	return nil
 }
 
-func (s *Server) isPaired() bool {
-	return len(s.st.Pairings()) > 0
+func (s *Server) deleteAllPairings() {
+	for _, p := range s.st.Pairings() {
+		s.st.DeletePairing(p.Name)
+	}
+	s.updateTxtRecords()
 }
 
 func (s *Server) pairedWithAdmin() bool {
@@ -442,7 +454,7 @@ func (s *Server) txtRecords() map[string]string {
 		"id": s.uuid,
 		"c#": fmt.Sprintf("%d", s.version),
 		"s#": "1",
-		"sf": fmt.Sprintf("%d", to.Int64(!s.isPaired())),
+		"sf": fmt.Sprintf("%d", to.Int64(!s.IsPaired())),
 		"ff": fmt.Sprintf("%d", to.Int64(s.MfiCompliant)),
 		"md": s.a.Name(),
 		"ci": fmt.Sprintf("%d", s.a.Type),
@@ -480,6 +492,7 @@ func (s *Server) service() (dnssd.Service, error) {
 		Host:   strings.Replace(s.uuid, ":", "", -1), // use the id (without the colons) to get unique hostnames
 		Text:   s.txtRecords(),
 		Port:   s.port,
+		Ifaces: s.Ifaces,
 	}
 
 	return dnssd.NewService(cfg)

@@ -32,8 +32,8 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 	d := struct {
 		Method     byte   `tlv8:"0"`
 		Identifier string `tlv8:"1"`
-		PublicKey  []byte `tlv8:"3"`
-		Permission byte   `tlv8:"11"`
+		PublicKey  []byte `tlv8:"3,optional"`
+		Permission byte   `tlv8:"11,optional"`
 		State      byte   `tlv8:"6"`
 	}{}
 
@@ -114,14 +114,14 @@ func (srv *Server) pairings(res http.ResponseWriter, req *http.Request) {
 		}
 		tlv8OK(res, resp)
 
-		// Close all connections if no
-		// admin controller is paired anymore
+		// If no admin controller is paired anymore,
+		// close all connections and delete all pairings
 		if !srv.pairedWithAdmin() {
 			for addr, conn := range conns() {
 				log.Debug.Println("Closing connection to", addr)
 				conn.Close()
 			}
-			return
+			srv.deleteAllPairings()
 		}
 
 		// Close connection of deleted controller
