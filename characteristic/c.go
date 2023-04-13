@@ -132,7 +132,7 @@ func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
 // The server invokes this function when the value is updated by an http request.
 func (c *C) SetValueRequest(val interface{}, req *http.Request) (interface{}, int) {
 	// check write permission
-	if !c.IsWritable() {
+	if req != nil && !c.IsWritable() {
 		log.Info.Printf("writing %v by %s not allowed\n", val, req.RemoteAddr)
 		return val, -70404
 	}

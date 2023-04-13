@@ -118,6 +118,11 @@ func TestReadOnly(t *testing.T) {
 	if is, want := c.Value(), "Matthias"; is != want {
 		t.Fatalf("is=%v want=%v", is, want)
 	}
+
+	c.SetValueRequest("Gottfried", nil)
+	if is, want := c.Value(), "Gottfried"; is != want {
+		t.Fatalf("is=%v want=%v", is, want)
+	}
 }
 
 func TestSetValueRequestFuncError(t *testing.T) {
