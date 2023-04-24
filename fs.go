@@ -3,7 +3,6 @@ package hap
 import (
 	"github.com/brutella/hap/log"
 
-	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"io/ioutil"
@@ -20,7 +19,7 @@ func NewFsStore(dir string) Store {
 	// Prepare filesystem directory
 	// Ensure that execute permission bit is set on all created dirs
 	// Read http://unix.stackexchange.com/questions/21251/why-do-directories-need-the-executable-x-permission-to-be-opened
-	err := os.MkdirAll(dir, 0755)
+	err := os.MkdirAll(dir, 0750)
 	if err != nil {
 		log.Info.Panic(err)
 	}
@@ -29,37 +28,11 @@ func NewFsStore(dir string) Store {
 }
 
 func (fs *fsStore) Set(key string, value []byte) error {
-	file, err := os.OpenFile(fs.filePathToFile(key), os.O_WRONLY|os.O_CREATE, 0666)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
-	_, err = file.Write(value)
-	return err
+	return os.WriteFile(fs.filePathToFile(key), value, 0640)
 }
 
 func (fs *fsStore) Get(key string) ([]byte, error) {
-	file, err := os.OpenFile(fs.filePathToFile(key), os.O_RDONLY, 0666)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	var b bytes.Buffer
-	var buffer = make([]byte, 32)
-	for {
-		n, _ := file.Read(buffer)
-		if n > 0 {
-			b.Write(buffer[:n])
-		} else {
-			break
-		}
-	}
-
-	return b.Bytes(), nil
+	return os.ReadFile(fs.filePathToFile(key))
 }
 
 // Delete removes the file for the corresponding key.
