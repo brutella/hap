@@ -245,4 +245,12 @@ func TestCharacteristicJson(t *testing.T) {
 			t.Fatalf("json-encoded value is of wrong type: is=%v want=%v", is, want)
 		}
 	}
+
+	// special case /identify must not emit any "value"
+	id := NewIdentify().C
+	jsonMap := encodeDecodeJson(id)
+
+	if _, exists := jsonMap["value"]; exists {
+		t.Fatalf("Identify characteristic cannot emit \"value\": %+v", jsonMap)
+	}
 }

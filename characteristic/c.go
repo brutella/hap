@@ -257,7 +257,7 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		Permissions []string `json:"perms"`
 		Format      string   `json:"format"`
 
-		Value       *V          `json:"value"`
+		Value       *V          `json:"value,omitempty"`
 		Description string      `json:"description,omitempty"` // manufacturer description (optional)
 		Unit        string      `json:"unit,omitempty"`
 		MaxLen      int         `json:"maxLen,omitempty"`
