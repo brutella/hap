@@ -1,7 +1,9 @@
 package characteristic
 
 import (
+	"encoding/json"
 	"net/http"
+	"reflect"
 	"testing"
 )
 
@@ -187,5 +189,60 @@ func TestValidRange(t *testing.T) {
 
 	if err := c.SetValue(TargetHeaterCoolerStateHeat); err != nil {
 		t.Fatal("no error expected")
+	}
+}
+
+func TestCharacteristicJson(t *testing.T) {
+	cs := []*C{
+		//NewContactSensorState().C,  // int
+		NewCurrentTemperature().C,  // float
+		NewCurrentTransport().C,    // bool
+		NewAccessoryIdentifier().C, // string
+	}
+
+	encodeDecodeJson := func(c *C) map[string]interface{} {
+		j, err := c.MarshalJSON()
+		if err != nil {
+			t.Fatal("cannot MarshalJSON: ", err)
+		}
+
+		var jsonMap map[string]interface{}
+		err = json.Unmarshal(j, &jsonMap)
+		if err != nil {
+			t.Fatal("invalid encoded JSON: ", err)
+		}
+
+		return jsonMap
+	}
+
+	for _, c := range cs {
+		jsonMap := encodeDecodeJson(c)
+
+		// verify properties
+		if is, want := jsonMap["type"], c.Type; is != want {
+			t.Fatalf("marshaled type is wrong: is=%v wanted=%v", is, want)
+		}
+		if is, want := jsonMap["format"], c.Format; is != want {
+			t.Fatalf("marshaled format is wrong: is=%v wanted=%v", is, want)
+		}
+		if is, want := jsonMap["value"], c.Val; is != want {
+			t.Fatalf("marshaled value is wrong: is=%v wanted=%v", is, want)
+		}
+
+		// set a ValueRequestFunc that returns an error
+		c.ValueRequestFunc = func(r *http.Request) (response interface{}, status int) {
+			return nil, -70408
+		}
+
+		// re-encode
+		jsonMap = encodeDecodeJson(c)
+
+		jv, exists := jsonMap["value"]
+		if !exists {
+			t.Fatalf("errored characteristic is missing \"value\": %+v", jsonMap)
+		}
+		if is, want := reflect.TypeOf(jv), reflect.TypeOf(c.Val); is != want {
+			t.Fatalf("json-encoded value is of wrong type: is=%v want=%v", is, want)
+		}
 	}
 }

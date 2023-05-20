@@ -2,6 +2,7 @@ package hap
 
 import (
 	"github.com/brutella/hap/accessory"
+	"github.com/brutella/hap/characteristic"
 	"github.com/brutella/hap/service"
 
 	"bytes"
@@ -195,6 +196,43 @@ func TestGetProgrammableSwitchEvent(t *testing.T) {
 	}
 
 	body := fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"value\":null}]}", a.Id, c.Id)
+	if is, want := string(b), body; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+}
+
+func TestGetValueRequestPartialFailure(t *testing.T) {
+	a := accessory.NewOutlet(accessory.Info{Name: "ABC"})
+	sw1 := a.Outlet.On
+	sw2 := characteristic.NewOn()
+	a.Outlet.AddC(sw2.C)
+
+	a.Outlet.On.ValueRequestFunc = func(r *http.Request) (interface{}, int) {
+		return nil, JsonStatusResourceBusy
+	}
+
+	srv, err := NewServer(NewMemStore(), a.A)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/characteristics?id=%d.%d,%[1]d.%[3]d", a.Id, sw1.Id, sw2.Id), nil)
+	w := httptest.NewRecorder()
+
+	srv.setSession(req.RemoteAddr, &session{})
+	srv.ss.Handler.ServeHTTP(w, req)
+
+	r := w.Result()
+	if is, want := r.StatusCode, http.StatusMultiStatus; is != want {
+		t.Fatalf("%v != %v", is, want)
+	}
+
+	b, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	body := fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"status\":%d},{\"aid\":%[1]d,\"iid\":%[4]d,\"value\":false,\"status\":0}]}", a.Id, sw1.Id, JsonStatusResourceBusy, sw2.Id)
 	if is, want := string(b), body; is != want {
 		t.Fatalf("%v != %v", is, want)
 	}

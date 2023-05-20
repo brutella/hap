@@ -12,9 +12,9 @@ import (
 )
 
 type characteristicData struct {
-	Aid   uint64      `json:"aid"`
-	Iid   uint64      `json:"iid"`
-	Value interface{} `json:"value"`
+	Aid   uint64            `json:"aid"`
+	Iid   uint64            `json:"iid"`
+	Value *characteristic.V `json:"value,omitempty"`
 
 	// optional values
 	Type        *string     `json:"type,omitempty"`
@@ -88,7 +88,7 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 			err = true
 			cdata.Status = &s
 		} else {
-			cdata.Value = v
+			cdata.Value = &characteristic.V{v}
 		}
 
 		if meta {
@@ -142,6 +142,14 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 	log.Debug.Println(toJSON(resp))
 
 	if err {
+		// when there's an error somewhere, "status: 0" must now be explicit
+		noError := 0
+		for _, c := range arr {
+			if c.Status == nil {
+				c.Status = &noError
+			}
+		}
+
 		JsonMultiStatus(res, resp)
 	} else {
 		JsonOK(res, resp)

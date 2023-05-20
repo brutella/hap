@@ -257,7 +257,7 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		Permissions []string `json:"perms"`
 		Format      string   `json:"format"`
 
-		Value       *V          `json:"value,omitempty"`
+		Value       *V          `json:"value"`
 		Description string      `json:"description,omitempty"` // manufacturer description (optional)
 		Unit        string      `json:"unit,omitempty"`
 		MaxLen      int         `json:"maxLen,omitempty"`
@@ -287,6 +287,8 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		// 2022-03-21 (mah) FIXME provide a http request instead of nil
 		if v, s := c.ValueRequest(nil); s == 0 {
 			d.Value = &V{v}
+		} else {
+			d.Value = &V{c.Val} // dummy "zero" value
 		}
 	}
 
