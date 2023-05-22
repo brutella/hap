@@ -287,6 +287,8 @@ func (c *C) MarshalJSON() ([]byte, error) {
 		// 2022-03-21 (mah) FIXME provide a http request instead of nil
 		if v, s := c.ValueRequest(nil); s == 0 {
 			d.Value = &V{v}
+		} else {
+			d.Value = &V{c.Val} // dummy "zero" value
 		}
 	}
 

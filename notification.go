@@ -20,7 +20,7 @@ func sendNotification(a *accessory.A, c *characteristic.C, req *http.Request) er
 			characteristicData{
 				Aid:   a.Id,
 				Iid:   c.Id,
-				Value: c.Val,
+				Value: &characteristic.V{c.Val},
 			},
 		},
 	}
