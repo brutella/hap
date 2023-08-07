@@ -14,6 +14,11 @@ func (ln *listener) Accept() (con net.Conn, err error) {
 		return
 	}
 
+	// disable TCP keepalives
+	if tcpconn, ok := con.(*net.TCPConn); ok {
+		tcpconn.SetKeepAlive(false)
+	}
+
 	conn := newConn(con)
 	setConn(conn.RemoteAddr().String(), conn)
 
