@@ -37,7 +37,7 @@ type RTPParams struct {
 	PayloadType             uint8   `tlv8:"1"`
 	Ssrc                    uint32  `tlv8:"2"`
 	Bitrate                 uint16  `tlv8:"3"`
-	Interval                float32 `tlv8:"4"` // MinimumRTCP interval
+	Interval                float32 `tlv8:"4"`          // MinimumRTCP interval
 	ComfortNoisePayloadType uint8   `tlv8:"5,optional"` // only for audio
 	MTU                     uint16  `tlv8:"6,optional"` // only for video
 }
