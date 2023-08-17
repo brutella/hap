@@ -343,6 +343,11 @@ func (c *C) convert(v interface{}) interface{} {
 }
 
 func (c *C) validVal(v interface{}) bool {
+	iv, ok := v.(int)
+	if !ok {
+		return true
+	}
+
 	if len(c.ValidVals) > 0 {
 		for _, val := range c.ValidVals {
 			if val == v {
@@ -353,7 +358,7 @@ func (c *C) validVal(v interface{}) bool {
 		return false
 	}
 
-	if iv, ok := v.(int); ok && len(c.ValidRange) == 2 {
+	if len(c.ValidRange) == 2 {
 		return c.ValidRange[0] <= iv && c.ValidRange[1] >= iv
 	}
 
