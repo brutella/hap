@@ -1,6 +1,8 @@
 package hap
 
 import (
+	"time"
+
 	"github.com/brutella/hap/accessory"
 	"github.com/brutella/hap/characteristic"
 	"github.com/brutella/hap/log"
@@ -164,19 +166,23 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 	}
 
 	data := struct {
-		Cs []putCharacteristicData `json:"characteristics"`
+		Cs  []putCharacteristicData `json:"characteristics"`
+		Pid uint64                  `json:"pid"`
 	}{}
+
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		JsonError(res, JsonStatusInvalidValueInRequest)
 		return
 	}
 
+	timedWr := srv.TimedWrite(req)
 	log.Debug.Println(toJSON(data))
 
 	arr := []*putCharacteristicData{}
 	for _, d := range data.Cs {
 		c := srv.findC(d.Aid, d.Iid)
+
 		cdata := &putCharacteristicData{
 			Aid: d.Aid,
 			Iid: d.Iid,
@@ -191,7 +197,24 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 
 		var value interface{}
 		var status int
-		if d.Value != nil {
+		if c.RequiresTimedWrite() {
+			if time.Now().After(timedWr.deadline) {
+				// HAP 6.7.2.4
+				// If the accessory receives an Execute Write Request after the TTL has expired it must ignore
+				// the request and respond with HAP status error code -70410 (HAPIPStatusErrorCodeInvalidWrite).
+				log.Info.Println("timed write wall time exceeded")
+				status = -70410
+			}
+			if data.Pid != timedWr.pid {
+				// HAP 6.7.2.4
+				// If the accessory receives a standard write request on a characteristic which requires timed write,
+				// the accessory must respond with HAP status error code -70410 (HAPIPStatusErrorCodeInvalidWrite).
+				log.Info.Println("timed write transaction id invalid")
+				status = -70410
+			}
+		}
+
+		if d.Value != nil && status == 0 {
 			value, status = c.SetValueRequest(d.Value, req)
 		}
 
@@ -217,6 +240,8 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 			arr = append(arr, cdata)
 		}
 	}
+
+	srv.DelTimedWrite(req)
 
 	if len(arr) == 0 {
 		res.WriteHeader(http.StatusNoContent)
@@ -249,4 +274,31 @@ func (srv *Server) findC(aid, iid uint64) *characteristic.C {
 	}
 
 	return nil
+}
+
+func (srv *Server) prepareCharacteristics(res http.ResponseWriter, req *http.Request) {
+	if !srv.IsAuthorized(req) {
+		log.Info.Printf("request from %s not authorized\n", req.RemoteAddr)
+		JsonError(res, JsonStatusInsufficientPrivileges)
+		return
+	}
+
+	data := struct {
+		Ttl uint64 `json:"ttl"`
+		Pid uint64 `json:"pid"`
+	}{}
+
+	err := json.NewDecoder(req.Body).Decode(&data)
+	if err != nil || data.Ttl == 0 || data.Pid == 0 {
+		JsonError(res, JsonStatusInvalidValueInRequest)
+		return
+	}
+
+	srv.SetTimedWrite(data.Ttl, data.Pid, req)
+
+	resp := struct {
+		Status int `json:"status"`
+	}{0}
+	log.Debug.Println(toJSON(resp))
+	JsonOK(res, resp)
 }

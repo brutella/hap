@@ -1,6 +1,8 @@
 package hap
 
 import (
+	"time"
+
 	"github.com/brutella/hap/chacha20poly1305"
 	"github.com/brutella/hap/hkdf"
 
@@ -50,6 +52,13 @@ type session struct {
 	decryptKey   [32]byte
 	encryptCount uint64
 	decryptCount uint64
+
+	twr *TimedWrite
+}
+
+type TimedWrite struct {
+	deadline time.Time
+	pid      uint64
 }
 
 func newSession(shared [32]byte, p Pairing) (*session, error) {

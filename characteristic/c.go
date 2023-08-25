@@ -11,9 +11,10 @@ import (
 const (
 	PermissionRead          = "pr" // The characteristic can only be read by paired controllers.
 	PermissionWrite         = "pw" // The characteristic can only be written by paired controllers.
+	PermissionTimedWrite    = "tw" // The characteristic allows only timed write procedure.
 	PermissionEvents        = "ev" // The characteristic supports events.
-	PermissionHidden        = "hd" // The characteristic is hidden from the user
-	PermissionWriteResponse = "wr" // The characteristic supports write response
+	PermissionHidden        = "hd" // The characteristic is hidden from the user.
+	PermissionWriteResponse = "wr" // The characteristic supports write response.
 )
 
 const (
@@ -225,6 +226,18 @@ func (c *C) IsWritable() bool {
 func (c *C) IsReadable() bool {
 	for _, p := range c.Permissions {
 		if p == PermissionRead {
+			return true
+		}
+	}
+
+	return false
+}
+
+// RequiresTimedWrite returns true if the value can
+// only be set with a timed write procedure.
+func (c *C) RequiresTimedWrite() bool {
+	for _, p := range c.Permissions {
+		if p == PermissionTimedWrite {
 			return true
 		}
 	}

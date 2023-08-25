@@ -179,6 +179,7 @@ func TestValidValues(t *testing.T) {
 		t.Fatal("no error expected")
 	}
 }
+
 func TestValidRange(t *testing.T) {
 	c := NewTargetHeaterCoolerState()
 	c.ValidRange = []int{TargetHeaterCoolerStateAuto, TargetHeaterCoolerStateHeat}
@@ -192,6 +193,21 @@ func TestValidRange(t *testing.T) {
 	}
 }
 
+func encodeDecodeJson(c *C, t *testing.T) map[string]interface{} {
+	j, err := c.MarshalJSON()
+	if err != nil {
+		t.Fatal("cannot MarshalJSON: ", err)
+	}
+
+	var jsonMap map[string]interface{}
+	err = json.Unmarshal(j, &jsonMap)
+	if err != nil {
+		t.Fatal("invalid encoded JSON: ", err)
+	}
+
+	return jsonMap
+}
+
 func TestCharacteristicJson(t *testing.T) {
 	cs := []*C{
 		//NewContactSensorState().C,  // int
@@ -200,23 +216,8 @@ func TestCharacteristicJson(t *testing.T) {
 		NewAccessoryIdentifier().C, // string
 	}
 
-	encodeDecodeJson := func(c *C) map[string]interface{} {
-		j, err := c.MarshalJSON()
-		if err != nil {
-			t.Fatal("cannot MarshalJSON: ", err)
-		}
-
-		var jsonMap map[string]interface{}
-		err = json.Unmarshal(j, &jsonMap)
-		if err != nil {
-			t.Fatal("invalid encoded JSON: ", err)
-		}
-
-		return jsonMap
-	}
-
 	for _, c := range cs {
-		jsonMap := encodeDecodeJson(c)
+		jsonMap := encodeDecodeJson(c, t)
 
 		// verify properties
 		if is, want := jsonMap["type"], c.Type; is != want {
@@ -235,7 +236,7 @@ func TestCharacteristicJson(t *testing.T) {
 		}
 
 		// re-encode
-		jsonMap = encodeDecodeJson(c)
+		jsonMap = encodeDecodeJson(c, t)
 
 		jv, exists := jsonMap["value"]
 		if !exists {
@@ -248,7 +249,7 @@ func TestCharacteristicJson(t *testing.T) {
 
 	// special case /identify must not emit any "value"
 	id := NewIdentify().C
-	jsonMap := encodeDecodeJson(id)
+	jsonMap := encodeDecodeJson(id, t)
 
 	if _, exists := jsonMap["value"]; exists {
 		t.Fatalf("Identify characteristic cannot emit \"value\": %+v", jsonMap)

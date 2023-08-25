@@ -2,6 +2,7 @@ package hap
 
 import (
 	"sync"
+	"time"
 
 	"github.com/brutella/dnssd"
 	"github.com/brutella/hap/accessory"
@@ -147,6 +148,7 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 		r.Get("/accessories", s.getAccessories)
 		r.Get("/characteristics", s.getCharacteristics)
 		r.Put("/characteristics", s.putCharacteristics)
+		r.Put("/prepare", s.prepareCharacteristics)
 		r.Post("/pairings", s.pairings)
 	})
 
@@ -163,6 +165,27 @@ func (s *Server) ServeMux() ServeMux {
 func (s *Server) IsAuthorized(request *http.Request) bool {
 	ss, _ := s.getSession(request.RemoteAddr)
 	return ss != nil
+}
+
+func (s *Server) TimedWrite(request *http.Request) *TimedWrite {
+	if ss, _ := s.getSession(request.RemoteAddr); ss != nil {
+		return ss.twr
+	}
+
+	return nil
+}
+
+func (s *Server) SetTimedWrite(ttl, pid uint64, request *http.Request) {
+	if ss, _ := s.getSession(request.RemoteAddr); ss != nil {
+		t := time.Now().Add(time.Duration(ttl) * time.Millisecond)
+		ss.twr = &TimedWrite{t, pid}
+	}
+}
+
+func (s *Server) DelTimedWrite(request *http.Request) {
+	if ss, _ := s.getSession(request.RemoteAddr); ss != nil {
+		ss.twr = nil
+	}
 }
 
 // IsPaired returns true if the server is paired with a client (iOS).

@@ -129,6 +129,87 @@ func TestSetValueRequestSuccess(t *testing.T) {
 	}
 }
 
+func TestPrepareValueRequest(t *testing.T) {
+	a := accessory.NewOutlet(accessory.Info{Name: "ABC"})
+	a.Outlet.On.Permissions = append(a.Outlet.On.Permissions, characteristic.PermissionTimedWrite)
+
+	s, err := NewServer(NewMemStore(), a.A)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("prepare", func(t *testing.T) {
+		body := fmt.Sprintf("{\"ttl\":500,\"pid\":123456789}")
+		req := httptest.NewRequest(http.MethodPut, "/prepare", bytes.NewBuffer([]byte(body)))
+		s.setSession(req.RemoteAddr, &session{})
+
+		w := httptest.NewRecorder()
+
+		s.ss.Handler.ServeHTTP(w, req)
+
+		r := w.Result()
+		if is, want := r.StatusCode, http.StatusOK; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if is, want := string(b), "{\"status\":0}"; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+	})
+
+	t.Run("put", func(t *testing.T) {
+		body := fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"value\":true}],\"pid\":123456789}", a.Id, a.Outlet.On.Id)
+		req := httptest.NewRequest(http.MethodPut, "/characteristics", bytes.NewBuffer([]byte(body)))
+		w := httptest.NewRecorder()
+
+		var setValueRequestFunc, onValueUpdateFunc bool
+		a.Outlet.On.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
+			if is, want := v.(bool), true; is != want {
+				t.Fatalf("%v != %v", is, want)
+			}
+			setValueRequestFunc = true
+
+			return v, 0
+		}
+
+		a.Outlet.On.OnValueUpdate(func(new bool, old bool, r *http.Request) {
+			if is, want := new, true; is != want {
+				t.Fatalf("%v != %v", is, want)
+			}
+
+			if is, want := old, false; is != want {
+				t.Fatalf("%v != %v", is, want)
+			}
+
+			onValueUpdateFunc = true
+		})
+
+		s.ss.Handler.ServeHTTP(w, req)
+
+		r := w.Result()
+		if is, want := r.StatusCode, http.StatusNoContent; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		if is, want := setValueRequestFunc, true; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		if is, want := onValueUpdateFunc, true; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		if is, want := a.Outlet.On.Value(), true; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+	})
+}
+
 func TestSetValueRequestFailure(t *testing.T) {
 	a := accessory.NewOutlet(accessory.Info{Name: "ABC"})
 
