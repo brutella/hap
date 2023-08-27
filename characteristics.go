@@ -222,8 +222,12 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 			cdata.Status = &status
 		}
 
-		if d.Response != nil && value != nil {
+		if (d.Response != nil || c.IsWriteResponse()) && value != nil {
 			cdata.Value = value
+
+			if c.IsWriteResponse() {
+				cdata.Status = &status
+			}
 		}
 
 		if d.Events != nil {
