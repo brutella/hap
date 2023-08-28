@@ -245,6 +245,18 @@ func (c *C) RequiresTimedWrite() bool {
 	return false
 }
 
+// IsWriteResponse returns true if the value can
+// return a response on write
+func (c *C) IsWriteResponse() bool {
+	for _, p := range c.Permissions {
+		if p == PermissionWriteResponse {
+			return true
+		}
+	}
+
+	return false
+}
+
 // IsObservable returns true if clients are allowed
 // to observe the value of the characteristic.
 func (c *C) IsObservable() bool {

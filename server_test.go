@@ -129,6 +129,58 @@ func TestSetValueRequestSuccess(t *testing.T) {
 	}
 }
 
+func TestWriteResponseCharacteristic(t *testing.T) {
+	a := accessory.NewOutlet(accessory.Info{Name: "ABC"})
+	c := characteristic.NewString("18")
+	c.Permissions = []string{characteristic.PermissionRead, characteristic.PermissionWrite, characteristic.PermissionWriteResponse}
+	a.Outlet.AddC(c.C)
+
+	s, err := NewServer(NewMemStore(), a.A)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("put", func(t *testing.T) {
+		body := fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"value\":\"ABC\",\"r\":true}],\"pid\":0}", a.Id, c.Id)
+		req := httptest.NewRequest(http.MethodPut, "/characteristics", bytes.NewBuffer([]byte(body)))
+		w := httptest.NewRecorder()
+
+		s.setSession(req.RemoteAddr, &session{})
+
+		setValueRequestFunc := false
+		c.SetValueRequestFunc = func(v interface{}, r *http.Request) (interface{}, int) {
+			if is, want := v.(string), "ABC"; is != want {
+				t.Fatalf("%v != %v", is, want)
+			}
+			setValueRequestFunc = true
+
+			return "DEF", 0
+		}
+
+		s.ss.Handler.ServeHTTP(w, req)
+
+		r := w.Result()
+		if is, want := r.StatusCode, http.StatusMultiStatus; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		if is, want := setValueRequestFunc, true; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+
+		// check reply body
+		b, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		body = fmt.Sprintf("{\"characteristics\":[{\"aid\":%d,\"iid\":%d,\"value\":\"DEF\",\"status\":0}]}", a.Id, c.Id)
+		if is, want := string(b), body; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+	})
+}
+
 func TestPrepareValueRequest(t *testing.T) {
 	a := accessory.NewOutlet(accessory.Info{Name: "ABC"})
 	a.Outlet.On.Permissions = append(a.Outlet.On.Permissions, characteristic.PermissionTimedWrite)
