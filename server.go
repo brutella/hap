@@ -139,6 +139,7 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 		r.Post("/pair-setup", s.pairSetup)
 		r.Post("/pair-verify", s.pairVerify)
 		r.Post("/identify", s.identify)
+		r.Post("/pairings", s.pairings)
 	})
 
 	// The json encoded content is encrypted. The encryption keys
@@ -149,7 +150,6 @@ func NewServer(store Store, a *accessory.A, as ...*accessory.A) (*Server, error)
 		r.Get("/characteristics", s.getCharacteristics)
 		r.Put("/characteristics", s.putCharacteristics)
 		r.Put("/prepare", s.prepareCharacteristics)
-		r.Post("/pairings", s.pairings)
 	})
 
 	return s, nil
