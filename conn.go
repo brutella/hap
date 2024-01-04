@@ -60,9 +60,15 @@ func (c *conn) Write(b []byte) (int, error) {
 	}
 
 	encB, err := ioutil.ReadAll(enc)
-	n, err := c.Conn.Write(encB)
+	if err != nil {
+		return 0, err
+	}
+	_, err = c.Conn.Write(encB)
+	if err != nil {
+		return 0, err
+	}
 
-	return n, err
+	return len(b), nil
 }
 
 const (
