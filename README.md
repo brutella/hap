@@ -154,10 +154,10 @@ By doing so, the first accessory `a1` appears as a bridge in HomeKit.
 When adding the accessories to HomeKit, iOS only shows the bridge accessory.
 Once the bridge was added, the other accessories appear automatically.
 
-HomeKit requires that every accessory has a unique id, which must not change between system restarts.
-`hap` automatically assigns the ids for you based on the order in which the accessories are added to the server.
+HomeKit requires that every accessory has a unique ID, which must not change between system restarts.
+`hap` automatically assigns the IDs for you based on the order in which the accessories are added to the server.
 
-The best would be to specify the unique id for every accessory yourself, like this
+The best would be to specify the unique ID for every accessory yourself, like this
 
 ```go
 a1.Id = 1
