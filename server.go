@@ -11,9 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/xiam/to"
-	"golang.org/x/text/secure/precis"
-	"golang.org/x/text/transform"
-	"golang.org/x/text/unicode/norm"
+	godiacritics "gopkg.in/Regis24GmbH/go-diacritics.v2"
 
 	"bytes"
 	"context"
@@ -26,7 +24,6 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 // A server handles incoming HTTP request for an accessory.
@@ -507,9 +504,8 @@ func (s *Server) service() (dnssd.Service, error) {
 	//
 	// [Radar] http://openradar.appspot.com/radar?id=4931940373233664
 	stripped := strings.Replace(s.a.Info.Name.Value(), " ", "_", -1)
-
 	cfg := dnssd.Config{
-		Name:   removeAccentsFromString(stripped),
+		Name:   normalize(stripped),
 		Type:   "_hap._tcp",
 		Domain: "local",
 		Host:   strings.Replace(s.uuid, ":", "", -1), // use the id (without the colons) to get unique hostnames
@@ -544,19 +540,8 @@ func (s *Server) fmtPin() string {
 	return first + "-" + second + "-" + third
 }
 
-// RemoveAccentsFromString removes accent characters from string
-// From https://stackoverflow.com/a/40405242/424814
-func removeAccentsFromString(v string) string {
-	var loosecompare = precis.NewIdentifier(
-		precis.AdditionalMapping(func() transform.Transformer {
-			return transform.Chain(norm.NFD, transform.RemoveFunc(func(r rune) bool {
-				return unicode.Is(unicode.Mn, r)
-			}))
-		}),
-		precis.Norm(norm.NFC), // This is the default; be explicit though.
-	)
-	p, _ := loosecompare.String(v)
-	return p
+func normalize(str string) string {
+	return godiacritics.Normalize(str)
 }
 
 func allZero(s []byte) bool {

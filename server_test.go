@@ -370,3 +370,19 @@ func TestGetValueRequestPartialFailure(t *testing.T) {
 		t.Fatalf("%v != %v", is, want)
 	}
 }
+
+func TestStringNormalization(t *testing.T) {
+	tests := []struct {
+		is   string
+		want string
+	}{
+		{"daß", "dass"},
+		{"Pâté", "Pate"},
+	}
+
+	for _, test := range tests {
+		if is, want := normalize(test.is), test.want; is != want {
+			t.Fatalf("%v != %v", is, want)
+		}
+	}
+}
