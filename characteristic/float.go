@@ -35,7 +35,7 @@ func (c *Float) SetStepValue(v float64) {
 
 // Value returns the value of c as float64.
 func (c *Float) Value() float64 {
-	return c.C.value().(float64)
+	return c.C.Value().(float64)
 }
 
 func (c *Float) MinValue() float64 {

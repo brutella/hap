@@ -10,7 +10,7 @@ func TestStreamController(t *testing.T) {
 	c := characteristic.NewSupportedVideoStreamConfiguration()
 	c.Val = "AX8BAQACDAEBAQEBAgIBAAMBAAECgAcCAjgEAwEeAQIABQIC0AIDAR4BAoACAgJoAQMBHgEC4AECAg4BAwEeAQJAAQICtAADAR4BAgAFAgLAAwMBHgECAAQCAgADAwEeAQKAAgIC4AEDAR4BAuABAgJoAQMBHgECQAECAvAAAwEP"
 
-	b := c.Value()
+	b := C.Value()
 	if len(b) == 0 {
 		t.Fatal("Zero length bytes")
 	}
@@ -40,7 +40,7 @@ func TestStreamingStatus(t *testing.T) {
 	c := characteristic.NewStreamingStatus()
 	c.Val = "AQEA"
 
-	b := c.Value()
+	b := C.Value()
 	if len(b) == 0 {
 		t.Fatalf("Zero length bytes")
 	}

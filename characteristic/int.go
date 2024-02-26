@@ -44,7 +44,7 @@ func (c *Int) SetStepValue(v int) {
 
 // Value returns the value of c as integer.
 func (c *Int) Value() int {
-	return c.C.value().(int)
+	return c.C.Value().(int)
 }
 
 func (c *Int) MinValue() int {

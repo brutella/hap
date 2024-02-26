@@ -11,7 +11,7 @@ func TestSelectedStreamConfiguration(t *testing.T) {
 	c := characteristic.NewSelectedStreamConfiguration()
 	c.Val = "ARUCAQABEHW8tiJ9E0F4tLlvOURdFCc="
 
-	b := c.Value()
+	b := C.Value()
 
 	var cfg StreamConfiguration
 	err := tlv8.Unmarshal(b, &cfg)

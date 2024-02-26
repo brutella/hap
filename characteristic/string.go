@@ -25,7 +25,7 @@ func (c *String) SetValue(v string) {
 
 // Value returns the value of c as string.
 func (c *String) Value() string {
-	return c.C.value().(string)
+	return c.C.Value().(string)
 }
 
 // OnSetRemoteValue set c.SetValueRequestFunc and calls fn.

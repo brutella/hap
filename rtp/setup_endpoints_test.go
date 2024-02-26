@@ -10,7 +10,7 @@ func TestSetupEndpoints(t *testing.T) {
 	c := characteristic.NewSetupEndpoints()
 	c.Val = "ARBz21VuCupGZre3A62biD8XAxkBAQACDDE5Mi4xNjguMC4xMwMC+OUEAurRBCUCEPpLBUWQEzkfFiGd1qkieqoDDi8cIMO0Vl1+kegzGgnpAQEABSUCEJQ27Ze9EEmuxcIVPhDEs68DDlaHwww6f6d5+NSClT7TAQEA"
 
-	b := c.Value()
+	b := C.Value()
 
 	var setup SetupEndpoints
 	err := tlv8.Unmarshal(b, &setup)

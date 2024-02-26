@@ -25,7 +25,7 @@ func (c *Bool) SetValue(v bool) {
 
 // Value returns the value of c as bool.
 func (c *Bool) Value() bool {
-	return c.C.value().(bool)
+	return c.C.Value().(bool)
 }
 
 // OnSetRemoteValue set c.SetValueRequestFunc and calls fn.
