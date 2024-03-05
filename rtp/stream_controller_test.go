@@ -1,16 +1,17 @@
 package rtp
 
 import (
+	"testing"
+
 	"github.com/brutella/hap/characteristic"
 	"github.com/brutella/hap/tlv8"
-	"testing"
 )
 
 func TestStreamController(t *testing.T) {
 	c := characteristic.NewSupportedVideoStreamConfiguration()
 	c.Val = "AX8BAQACDAEBAQEBAgIBAAMBAAECgAcCAjgEAwEeAQIABQIC0AIDAR4BAoACAgJoAQMBHgEC4AECAg4BAwEeAQJAAQICtAADAR4BAgAFAgLAAwMBHgECAAQCAgADAwEeAQKAAgIC4AEDAR4BAuABAgJoAQMBHgECQAECAvAAAwEP"
 
-	b := C.Value()
+	b := c.Value()
 	if len(b) == 0 {
 		t.Fatal("Zero length bytes")
 	}
@@ -40,7 +41,7 @@ func TestStreamingStatus(t *testing.T) {
 	c := characteristic.NewStreamingStatus()
 	c.Val = "AQEA"
 
-	b := C.Value()
+	b := c.Value()
 	if len(b) == 0 {
 		t.Fatalf("Zero length bytes")
 	}
