@@ -130,7 +130,9 @@ func New() *C {
 // OnCValueUpdate register the given function which is called
 // when the value of the characteristic is updated.
 func (c *C) OnCValueUpdate(fn ValueUpdateFunc) {
+	c.m.Lock()
 	c.valUpdateFuncs = append(c.valUpdateFuncs, fn)
+	c.m.Unlock()
 }
 
 // Sets the value of c to val and returns a status code.
@@ -185,10 +187,11 @@ func (c *C) setValue(v interface{}, req *http.Request) (interface{}, int) {
 	c.m.Lock()
 	// update to new value
 	c.Val = newVal
+	funcs := c.valUpdateFuncs
 	c.m.Unlock()
 
 	// call update funcs
-	for _, fn := range c.valUpdateFuncs {
+	for _, fn := range funcs {
 		fn(c, newVal, oldVal, req)
 	}
 
