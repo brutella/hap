@@ -86,9 +86,6 @@ type C struct {
 	// ValidRange is a 2 element array the valid range start and end.
 	ValidRange []int
 
-	// Stores which connected client has events enabled for this characteristic.
-	Events map[string]bool
-
 	// ValueRequestFunc is called when the value of C is requested by a
 	// paired controller via an HTTP request.
 	// If the value of C represents the state of a remote object, you can use
@@ -116,13 +113,16 @@ type C struct {
 	// This flag is only used for programmable switch events.
 	updateOnSameValue bool
 
+	// Stores which connected client has events enabled for this characteristic.
+	events map[string]bool
+
 	m sync.Mutex
 }
 
 // New returns a new characteristic.
 func New() *C {
 	return &C{
-		Events:         make(map[string]bool),
+		events:         make(map[string]bool),
 		valUpdateFuncs: make([]ValueUpdateFunc, 0),
 	}
 }
@@ -220,6 +220,23 @@ func (c *C) Value() interface{} {
 	c.m.Lock()
 	defer c.m.Unlock()
 	return c.Val
+}
+
+func (c *C) SetEvent(remoteAddr string, enable bool) {
+	c.m.Lock()
+	defer c.m.Unlock()
+	c.events[remoteAddr] = enable
+}
+
+func (c *C) HasEventsEnabled(remoteAddr string) bool {
+	c.m.Lock()
+	defer c.m.Unlock()
+
+	ev, ok := c.events[remoteAddr]
+	if ok {
+		return ev
+	}
+	return false
 }
 
 // IsWritable returns true if clients are allowed

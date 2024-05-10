@@ -62,7 +62,7 @@ func sendNotification(a *accessory.A, c *characteristic.C, req *http.Request) er
 		}
 
 		// Check which connection has events enabled.
-		if ev, ok := c.Events[conn.RemoteAddr().String()]; ok && ev {
+		if c.HasEventsEnabled(conn.RemoteAddr().String()) {
 			log.Debug.Printf("send event to %s:\n%s\n", conn.RemoteAddr(), string(b))
 			conn.Write(b)
 		}

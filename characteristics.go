@@ -121,10 +121,7 @@ func (srv *Server) getCharacteristics(res http.ResponseWriter, req *http.Request
 
 		// Should the response include the events flag?
 		if ev {
-			var ev bool
-			if v, ok := c.Events[req.RemoteAddr]; ok {
-				ev = v
-			}
+			ev := c.HasEventsEnabled(req.RemoteAddr)
 			cdata.Events = &ev
 		}
 
@@ -236,7 +233,7 @@ func (srv *Server) putCharacteristics(res http.ResponseWriter, req *http.Request
 				cdata.Status = &status
 				arr = append(arr, cdata)
 			} else {
-				c.Events[req.RemoteAddr] = *d.Events
+				c.SetEvent(req.RemoteAddr, *d.Events)
 			}
 		}
 
