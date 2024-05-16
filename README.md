@@ -154,15 +154,35 @@ By doing so, the first accessory `a1` appears as a bridge in HomeKit.
 When adding the accessories to HomeKit, iOS only shows the bridge accessory.
 Once the bridge was added, the other accessories appear automatically.
 
-HomeKit requires that every accessory has a unique id, which must not change between system restarts.
-`hap` automatically assigns the ids for you based on the order in which the accessories are added to the server.
+HomeKit requires that every accessory has a unique ID, which must not change between system restarts.
+`hap` automatically assigns the IDs for you based on the order in which the accessories are added to the server.
 
-The best would be to specify the unique id for every accessory yourself, like this
+The best would be to specify the unique ID for every accessory yourself, like this
 
 ```go
 a1.Id = 1
 a2.Id = 2
 ```
+
+## Making your server portable
+
+As noted above, HomeKit requires that every accessory has a unique ID and it must not change between system restarts.
+If you want to run your server in a k3s cluster or generally want to make it portable so you can move it to a different
+computer (like a new Raspberry Pi), a certain number of requirements and steps are necessary:
+
+1. The bridge has the ID `1`.
+2. All of your accessories have unique IDs that don't change. This is important: `hap` automatically assigns the IDs for you
+based on the order in which the accessories are added to the server. If you add more accessories in the middle, all of the
+following accessory IDs will change, causing weird issues in HomeKit where a light switch could turn into a thermostat.
+3. A backup of the stored files (if you're using the file store) are available at the new location. This includes:
+- `version`
+- `schema`
+- `uuid`
+- `keypair`
+- `configHash`
+- `*.pairing`
+
+Shut down the server running at the old location before moving the files to the new location and starting the server there.
 
 ## Accessory Architecture
 
