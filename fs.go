@@ -187,7 +187,7 @@ func (st *storer) Pairings() []Pairing {
 	return arr
 }
 
-// eneity is used in older versions to store public & private keys
+// entity is used in older versions to store public & private keys
 // of the accessory and paired clients.
 // Use Keypair and Pairing instead.
 type entity struct {
