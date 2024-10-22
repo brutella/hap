@@ -278,18 +278,34 @@ func (s *Server) add(as []*accessory.A) error {
 			aid++
 		}
 
+		iids := map[uint64]interface{}{}
 		var iid uint64 = 1
 		for _, s := range a.Ss {
-			s.Id = iid
-			iid++
+			if s.Id == 0 {
+				s.Id = iid
+				iid++
+			}
+
+			if _, alreadyExists := iids[s.Id]; alreadyExists {
+				return fmt.Errorf("service id %d already exists (%s)", s.Id, a.Name())
+			}
+			iids[s.Id] = struct{}{}
 
 			for _, c := range s.Cs {
 				// Create a local variable before
 				// capturing them in a function.
 				a := a
 
-				c.Id = iid
-				iid++
+				if c.Id == 0 {
+					c.Id = iid
+					iid++
+				}
+
+				if _, alreadyExists := iids[c.Id]; alreadyExists {
+					return fmt.Errorf("characteristic id %d already exists (%s)", c.Id, a.Name())
+				}
+
+				iids[c.Id] = struct{}{}
 
 				// If the value of a characteristic changes, we notify all connected clients.
 				// The identify characteristic is a special case where we all accessory.IdentifyFunc.
